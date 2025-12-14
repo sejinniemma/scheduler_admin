@@ -1,0 +1,199 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans);
+
+  /* Custom font sizes */
+  --font-size-hero1: 80px;
+  --line-height-hero1: 120px;
+  --letter-spacing-hero1: -0.02em;
+
+  --font-size-hero2: 60px;
+  --line-height-hero2: 90px;
+  --letter-spacing-hero2: -0.02em;
+
+  --font-size-title1: 48px;
+  --line-height-title1: 72px;
+  --letter-spacing-title1: -0.02em;
+
+  --font-size-title2: 36px;
+  --line-height-title2: 54px;
+  --letter-spacing-title2: -0.02em;
+
+  --font-size-sub-title1: 32px;
+  --line-height-sub-title1: 48px;
+  --letter-spacing-sub-title1: -0.02em;
+
+  --font-size-sub-title2: 28px;
+  --line-height-sub-title2: 42px;
+  --letter-spacing-sub-title2: -0.02em;
+
+  --font-size-body1: 24px;
+  --line-height-body1: 36px;
+  --letter-spacing-body1: -0.02em;
+
+  --font-size-body2: 20px;
+  --line-height-body2: 30px;
+  --letter-spacing-body2: -0.02em;
+
+  --font-size-body3: 18px;
+  --line-height-body3: 26px;
+  --letter-spacing-body3: -0.02em;
+
+  --font-size-body4: 16px;
+  --line-height-body4: 24px;
+  --letter-spacing-body4: -0.02em;
+
+  --font-size-caption1: 14px;
+  --line-height-caption1: 22px;
+  --letter-spacing-caption1: -0.02em;
+
+  --font-size-caption2: 12px;
+  --line-height-caption2: 18px;
+  --letter-spacing-caption2: -0.02em;
+
+  /* Custom fonts - Next Font CSS 변수 사용 */
+  --font-pretendard: var(--font-pretendard);
+  /* --font-hanwha: var(--font-hanwha); */
+
+  /* 커스텀 색상 설정 */
+
+  /* text colors */
+  --color-normal: #111111;
+  --color-normal-strong: #000;
+  --color-dark: #595959;
+  --color-default: #797979;
+  --color-secondary: #959595;
+  --color-tertiary: #979797;
+  --color-disabled-dark: #ababab;
+  --color-disabled: #dadada;
+
+  /* background colors */
+  --color-light: #f7f7f7;
+  --color-lighter: #f5f5f5;
+  --color-white: #fff;
+
+  /* border colors */
+  --color-line-edge: #ececec;
+  --color-line-base: #e1e1e1;
+  --color-line-medium: #d7d7d7;
+  --color-line-strong: #d1d5dc;
+
+  /* progress bar colors */
+  --color-progress-bar-background: #e6e6e6;
+
+  /* Color Palette */
+  --color-blue: #3b82f6;
+  --color-blue-deep: #4582ed;
+  --color-blue-admin: #155dfc;
+  --color-green: #00a63e;
+  --color-green-light: #00bd79;
+  --color-yellow: #ff9000;
+  --color-red: #ef4452;
+  --color-red-bright: #e7000b;
+  --color-red-dark: #d22c2c;
+
+  --color-black: #101828;
+
+  /* Select Box */
+  --color-required: #fb2c36;
+
+  /* dim colors */
+  --color-dim: rgba(22, 22, 22, 0.65);
+}
+
+/* Custom Typography Classes */
+.text-hero1 {
+  font-size: var(--font-size-hero1);
+  line-height: var(--line-height-hero1);
+  letter-spacing: var(--letter-spacing-hero1);
+}
+
+.text-hero2 {
+  font-size: var(--font-size-hero2);
+  line-height: var(--line-height-hero2);
+  letter-spacing: var(--letter-spacing-hero2);
+}
+
+.text-title1 {
+  font-size: var(--font-size-title1);
+  line-height: var(--line-height-title1);
+  letter-spacing: var(--letter-spacing-title1);
+}
+
+.text-title2 {
+  font-size: var(--font-size-title2);
+  line-height: var(--line-height-title2);
+  letter-spacing: var(--letter-spacing-title2);
+}
+
+.text-sub-title1 {
+  font-size: var(--font-size-sub-title1);
+  line-height: var(--line-height-sub-title1);
+  letter-spacing: var(--letter-spacing-sub-title1);
+}
+
+.text-sub-title2 {
+  font-size: var(--font-size-sub-title2);
+  line-height: var(--line-height-sub-title2);
+  letter-spacing: var(--letter-spacing-sub-title2);
+}
+
+.text-body1 {
+  font-size: var(--font-size-body1);
+  line-height: var(--line-height-body1);
+  letter-spacing: var(--letter-spacing-body1);
+}
+
+.text-body2 {
+  font-size: var(--font-size-body2);
+  line-height: var(--line-height-body2);
+  letter-spacing: var(--letter-spacing-body2);
+}
+
+.text-body3 {
+  font-size: var(--font-size-body3);
+  line-height: var(--line-height-body3);
+  letter-spacing: var(--letter-spacing-body3);
+}
+
+.text-body4 {
+  font-size: var(--font-size-body4);
+  line-height: var(--line-height-body4);
+  letter-spacing: var(--letter-spacing-body4);
+}
+
+.text-caption1 {
+  font-size: var(--font-size-caption1);
+  line-height: var(--line-height-caption1);
+  letter-spacing: var(--letter-spacing-caption1);
+}
+
+.text-caption2 {
+  font-size: var(--font-size-caption2);
+  line-height: var(--line-height-caption2);
+  letter-spacing: var(--letter-spacing-caption2);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+body {
+  color: var(--foreground);
+  font-weight: 400; /* 기본 weight */
+  /* 모든 언어에 Pretendard를 기본 폰트로 사용 */
+  font-family: var(--font-pretendard), sans-serif;
+}
