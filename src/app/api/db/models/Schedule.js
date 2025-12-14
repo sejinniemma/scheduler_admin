@@ -15,7 +15,6 @@ const ScheduleSchema = new mongoose.Schema(
     subUser: {
       type: String,
       ref: 'User',
-      required: true,
     },
     groom: { type: String, required: true },
     bride: { type: String, required: true },

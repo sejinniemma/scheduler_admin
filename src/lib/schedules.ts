@@ -38,7 +38,7 @@ export async function getAllAssignedSchedules(): Promise<Schedule[]> {
       return [];
     }
 
-    // 각 스케줄에 대한 Report의 currentStep 가져오기
+    // 각 스케줄에 대한 Report의 currentStep 가져오기 및 User 이름 가져오기
     const schedulesWithCurrentStep = await Promise.all(
       sortedSchedules.map(async (schedule) => {
         // 해당 스케줄에 대한 Report 찾기
@@ -47,10 +47,14 @@ export async function getAllAssignedSchedules(): Promise<Schedule[]> {
           user: user._id,
         });
 
+        // mainUser와 subUser의 이름 가져오기
+        const mainUserDoc = await UserModel.findOne({ id: schedule.mainUser });
+        const subUserDoc = await UserModel.findOne({ id: schedule.subUser });
+
         return {
           id: schedule.id,
-          mainUser: schedule.mainUser,
-          subUser: schedule.subUser,
+          mainUser: mainUserDoc?.name || schedule.mainUser,
+          subUser: subUserDoc?.name || schedule.subUser,
           groom: schedule.groom,
           bride: schedule.bride,
           date: schedule.date,
