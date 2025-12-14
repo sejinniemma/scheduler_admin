@@ -100,6 +100,39 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAssign = async (scheduleId: string) => {
+    try {
+      const response = await fetch('/api/schedules/update', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          scheduleId,
+          subStatus: 'assigned',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('배정에 실패했습니다.');
+      }
+
+      // 성공 시 스케줄 목록 새로고침
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === scheduleId
+            ? { ...schedule, subStatus: 'assigned' }
+            : schedule
+        )
+      );
+    } catch (err) {
+      console.error('배정 오류:', err);
+      alert(
+        err instanceof Error ? err.message : '배정 중 오류가 발생했습니다.'
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className='p-[40px]'>
@@ -176,6 +209,7 @@ export default function DashboardPage() {
                   <th className='p-[16px]'>메인</th>
                   <th className='p-[16px]'>서브</th>
                   <th className='p-[16px]'>상태</th>
+                  <th className='p-[16px]'>상세</th>
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -214,6 +248,19 @@ export default function DashboardPage() {
                       >
                         {getStatusLabel(schedule.status)}
                       </span>
+                    </td>
+                    {/* 상세 - 배정 버튼 */}
+                    <td className='p-[16px]'>
+                      {schedule.subStatus === 'unassigned' ? (
+                        <button
+                          onClick={() => handleAssign(schedule.id)}
+                          className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+                        >
+                          배정
+                        </button>
+                      ) : (
+                        <span className='text-body4 text-default'>-</span>
+                      )}
                     </td>
                   </tr>
                 ))}
