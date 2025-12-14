@@ -8,6 +8,7 @@ interface ButtonProps {
   className?: string;
   leftIcon?: ReactNode;
   showShadow?: boolean;
+  customShadow?: string;
   mt?: string;
   disabled?: boolean;
 }
@@ -19,9 +20,14 @@ export default function Button({
   className = '',
   leftIcon,
   showShadow = true,
+  customShadow,
   mt = '30px',
   disabled = false,
 }: ButtonProps) {
+  const defaultShadow = '0 4px 4px 0 rgba(59, 130, 246, 0.20)';
+  const hoverShadow = '0 6px 8px 0 rgba(59, 130, 246, 0.30)';
+  const shadowValue = customShadow || (showShadow ? defaultShadow : 'none');
+
   return (
     <button
       type={type}
@@ -31,21 +37,25 @@ export default function Button({
         disabled
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer hover:opacity-90'
-      } ${showShadow && !disabled ? 'hover:shadow-lg' : ''} ${className}`}
+      } ${
+        showShadow && !disabled && !customShadow ? 'hover:shadow-lg' : ''
+      } ${className}`}
       style={{
         marginTop: mt,
-        boxShadow: showShadow ? '0 4px 4px 0 rgba(59, 130, 246, 0.20)' : 'none',
+        boxShadow: shadowValue,
       }}
       onMouseEnter={(e) => {
-        if (showShadow) {
-          e.currentTarget.style.boxShadow =
-            '0 6px 8px 0 rgba(59, 130, 246, 0.30)';
+        if (showShadow && !customShadow) {
+          e.currentTarget.style.boxShadow = hoverShadow;
+        } else if (customShadow) {
+          e.currentTarget.style.boxShadow = customShadow;
         }
       }}
       onMouseLeave={(e) => {
-        if (showShadow) {
-          e.currentTarget.style.boxShadow =
-            '0 4px 4px 0 rgba(59, 130, 246, 0.20)';
+        if (customShadow) {
+          e.currentTarget.style.boxShadow = customShadow;
+        } else if (showShadow) {
+          e.currentTarget.style.boxShadow = defaultShadow;
         } else {
           e.currentTarget.style.boxShadow = 'none';
         }
