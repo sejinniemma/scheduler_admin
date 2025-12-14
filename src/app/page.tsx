@@ -47,7 +47,7 @@ export default function Home() {
     <div className='flex flex-col items-center justify-center h-full'>
       {/* Title */}
       <div className='flex flex-col items-center gap-[10px] mb-[50px]'>
-        <div className='relative w-[60px] h-[60px]'>
+        <div className='relative w-[60px] h-[60px] md:w-[100px] md:h-[100px]'>
           <Image
             src='/images/icons/camera.png'
             alt='camera icon'
@@ -57,13 +57,15 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <h1 className='text-body2 text-normal font-bold'>Scheduler</h1>
+        <h1 className='text-body2-responsive text-normal font-bold'>
+          Scheduler
+        </h1>
       </div>
 
       {/* Login Form */}
       <form
         onSubmit={handleSubmit}
-        className='flex flex-col items-center w-[260px]'
+        className='flex flex-col items-center w-[260px] md:w-[469px]'
       >
         <input
           type='text'

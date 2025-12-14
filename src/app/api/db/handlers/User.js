@@ -236,7 +236,7 @@ export async function verifyUserCredentials(phone, name) {
     await connectToDatabase();
 
     // 전화번호로 User 찾기
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ phone, role: 'ADMIN' });
 
     if (!user) {
       return {

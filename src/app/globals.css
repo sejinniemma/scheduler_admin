@@ -158,6 +158,21 @@
   letter-spacing: var(--letter-spacing-body2);
 }
 
+/* 반응형 텍스트: 모바일은 body2, 데스크톱은 body1 */
+.text-body2-responsive {
+  font-size: var(--font-size-body2);
+  line-height: var(--line-height-body2);
+  letter-spacing: var(--letter-spacing-body2);
+}
+
+@media (min-width: 768px) {
+  .text-body2-responsive {
+    font-size: var(--font-size-body1);
+    line-height: var(--line-height-body1);
+    letter-spacing: var(--letter-spacing-body1);
+  }
+}
+
 .text-body3 {
   font-size: var(--font-size-body3);
   line-height: var(--line-height-body3);

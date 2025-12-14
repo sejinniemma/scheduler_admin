@@ -14,7 +14,7 @@ const MobileLayout = ({
     <section
       id={id}
       className={cn(
-        'max-w-[394px] h-screen bg-lighter  mx-auto w-full',
+        'max-w-[394px] h-screen bg-lighter  mx-auto w-full flex justify-center items-center',
         className
       )}
     >
