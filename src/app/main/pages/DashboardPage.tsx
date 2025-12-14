@@ -149,7 +149,7 @@ export default function DashboardPage() {
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key)}
-            className={`px-[20px] py-[12px] text-body4 font-medium transition-colors border-b-2 ${
+            className={`px-[20px] py-[12px] cursor-pointer text-body4 font-medium transition-colors border-b-2 ${
               statusFilter === tab.key
                 ? 'border-blue text-blue font-semibold'
                 : 'border-transparent text-default hover:text-normal'
