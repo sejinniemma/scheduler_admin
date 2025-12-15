@@ -1,38 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import type { Schedule } from '@/src/types/schedule';
+import React, { useState } from 'react';
+import { useSchedule } from '@/src/contexts/ScheduleContext';
 
 type SubStatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
 
 export default function SchedulesPage() {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { schedules, isLoading, error, refetch } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<SubStatusFilter>('all');
-
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/schedules/list');
-        if (!response.ok) {
-          throw new Error('스케줄을 가져오는데 실패했습니다.');
-        }
-        const data = await response.json();
-        setSchedules(data.schedules || []);
-      } catch (err) {
-        console.error('스케줄 가져오기 오류:', err);
-        setError(
-          err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSchedules();
-  }, []);
 
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
@@ -91,14 +66,7 @@ export default function SchedulesPage() {
       }
 
       // 성공 시 스케줄 목록 새로고침
-      const data = await response.json();
-      setSchedules((prev) =>
-        prev.map((schedule) =>
-          schedule.id === scheduleId
-            ? { ...schedule, subStatus: 'assigned' }
-            : schedule
-        )
-      );
+      await refetch();
     } catch (err) {
       console.error('배정 오류:', err);
       alert(

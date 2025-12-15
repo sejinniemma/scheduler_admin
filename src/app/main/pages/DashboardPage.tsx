@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import type { Schedule } from '@/src/types/schedule';
+import React, { useState } from 'react';
 import { formatDateForGroup } from '@/src/lib/utiles';
+import { useSchedule } from '@/src/contexts/ScheduleContext';
 
 type StatusFilter =
   | 'all'
@@ -15,9 +15,7 @@ type StatusFilter =
   | 'canceled';
 
 export default function DashboardPage() {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { schedules, isLoading, error } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   // 오늘 날짜 포맷팅
@@ -29,29 +27,6 @@ export default function DashboardPage() {
     const dateString = `${year}-${month}-${day}`;
     return formatDateForGroup(dateString);
   };
-
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/schedules/today');
-        if (!response.ok) {
-          throw new Error('스케줄을 가져오는데 실패했습니다.');
-        }
-        const data = await response.json();
-        setSchedules(data.schedules || []);
-      } catch (err) {
-        console.error('스케줄 가져오기 오류:', err);
-        setError(
-          err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSchedules();
-  }, []);
 
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
