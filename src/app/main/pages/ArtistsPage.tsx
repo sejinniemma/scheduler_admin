@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@apollo/client/react';
+import { GET_USERS } from '@/src/client/graphql/User';
 
 interface User {
   id: string;
@@ -21,34 +23,22 @@ interface User {
 
 type StatusFilter = 'all' | 'ACTIVE' | 'INACTIVE';
 
+interface GetUsersData {
+  users: User[];
+}
+
 export default function ArtistsPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data,
+    loading: isLoading,
+    error: queryError,
+  } = useQuery<GetUsersData>(GET_USERS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error('사용자 정보를 가져오는데 실패했습니다.');
-        }
-        const data = await response.json();
-        setUsers(data.users || []);
-      } catch (err) {
-        console.error('사용자 가져오기 오류:', err);
-        setError(
-          err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
+  const users: User[] = data?.users || [];
+  const error = queryError
+    ? queryError.message || '사용자 정보를 가져오는데 실패했습니다.'
+    : null;
 
   // 상태별 필터링
   const filteredUsers = users.filter((user) => {

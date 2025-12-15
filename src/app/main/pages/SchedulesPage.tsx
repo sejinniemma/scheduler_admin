@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import { UPDATE_SCHEDULE } from '@/src/client/graphql/Schedule';
+import CreateScheduleModal from '@/src/components/CreateScheduleModal';
 
 type SubStatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
 
@@ -11,6 +12,7 @@ export default function SchedulesPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<SubStatusFilter>('all');
   const [updateSchedule] = useMutation(UPDATE_SCHEDULE);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
@@ -108,7 +110,15 @@ export default function SchedulesPage() {
       <h1 className='text-body4 text-normal font-semibold mb-[40px]'>
         일정관리
       </h1>
-
+      {/* 새일정 추가 */}
+      <div className='flex justify-end'>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+        >
+          + 새 일정
+        </button>
+      </div>
       {/* 상태 탭 */}
       <div className='flex gap-[10px] mb-[20px] border-b border-line-base'>
         {statusTabs.map((tab) => (
@@ -211,6 +221,16 @@ export default function SchedulesPage() {
           </div>
         </div>
       )}
+
+      {/* 새 일정 추가 모달 */}
+      <CreateScheduleModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          setIsCreateModalOpen(false);
+          refetch();
+        }}
+      />
     </div>
   );
 }

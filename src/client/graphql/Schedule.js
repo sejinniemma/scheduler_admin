@@ -50,27 +50,43 @@ export const GET_SCHEDULES_LIST = gql`
 // Schedule Mutations
 export const CREATE_SCHEDULE = gql`
   mutation CreateSchedule(
+    $mainUser: ID!
+    $subUser: ID
     $groom: String!
     $bride: String!
     $date: String!
+    $time: String!
     $location: String
+    $venue: String
     $memo: String
+    $status: String
+    $subStatus: String
   ) {
     createSchedule(
+      mainUser: $mainUser
+      subUser: $subUser
       groom: $groom
       bride: $bride
       date: $date
+      time: $time
       location: $location
+      venue: $venue
       memo: $memo
+      status: $status
+      subStatus: $subStatus
     ) {
       id
+      mainUser
+      subUser
       groom
       bride
       date
+      time
       location
+      venue
       memo
       status
-      currentStep
+      subStatus
     }
   }
 `;

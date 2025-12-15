@@ -8,7 +8,6 @@ export const GET_ME = gql`
       name
       phone
       role
-      tenantId
     }
   }
 `;
@@ -19,8 +18,17 @@ export const GET_USERS = gql`
       id
       name
       phone
+      gender
       role
-      tenantId
+      address
+      mainLocation
+      hasVehicle
+      startDate
+      birthDate
+      status
+      memo
+      createdAt
+      updatedAt
     }
   }
 `;
