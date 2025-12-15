@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
   X,
@@ -12,15 +12,20 @@ import {
   StickyNote,
 } from 'lucide-react';
 import { GET_USERS } from '@/src/client/graphql/User';
-import { CREATE_SCHEDULE } from '@/src/client/graphql/Schedule';
+import {
+  CREATE_SCHEDULE,
+  UPDATE_SCHEDULE,
+} from '@/src/client/graphql/Schedule';
 
 export default function CreateScheduleModal({
   open = false,
   onClose = () => {},
   onSuccess = () => {},
+  schedule = null, // 수정 모드일 때 전달되는 스케줄 데이터
 }) {
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
   const [createSchedule, { loading: creating }] = useMutation(CREATE_SCHEDULE);
+  const [updateSchedule, { loading: updating }] = useMutation(UPDATE_SCHEDULE);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -34,6 +39,58 @@ export default function CreateScheduleModal({
     memo: '',
     request: '',
   });
+
+  const isEditMode = !!schedule;
+
+  // 수정 모드일 때 스케줄 데이터로 폼 초기화
+  useEffect(() => {
+    if (!open) return;
+
+    if (schedule && typeof schedule === 'object') {
+      // mainUser와 subUser는 이름일 수 있으므로 ID로 변환
+      const mainUserName = schedule.mainUser || '';
+      const subUserName = schedule.subUser || '';
+
+      const mainUserId =
+        (mainUserName &&
+          usersData?.users?.find((user) => user?.name === mainUserName)?.id) ||
+        mainUserName ||
+        '';
+      const subUserId =
+        (subUserName &&
+          usersData?.users?.find((user) => user?.name === subUserName)?.id) ||
+        subUserName ||
+        '';
+
+      setFormData({
+        date: schedule.date || '',
+        time: schedule.time || '',
+        venue: schedule.venue || '',
+        location: schedule.location || '',
+        mainUser: mainUserId,
+        subUser: subUserId,
+        groom: schedule.groom || '',
+        bride: schedule.bride || '',
+        memo: schedule.memo || '',
+        request: '', // 요청사항은 별도 필드가 없으므로 빈 값
+      });
+    } else {
+      // 생성 모드일 때 폼 초기화
+      setFormData({
+        date: '',
+        time: '',
+        venue: '',
+        location: '',
+        mainUser: '',
+        subUser: '',
+        groom: '',
+        bride: '',
+        memo: '',
+        request: '',
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule, open]);
 
   // ACTIVE 상태인 사용자만 필터링
   const activeUsers =
@@ -58,25 +115,48 @@ export default function CreateScheduleModal({
       return;
     }
 
-    // 메인 작가가 없으면 미배정 상태로
-    const subStatus = formData.mainUser ? 'assigned' : 'unassigned';
-
     try {
-      await createSchedule({
-        variables: {
-          mainUser: formData.mainUser || null,
-          subUser: formData.subUser || null,
-          groom: formData.groom,
-          bride: formData.bride,
-          date: formData.date,
-          time: formData.time,
-          venue: formData.venue,
-          location: formData.location || null,
-          memo: formData.memo || formData.request || null,
-          status: 'pending',
-          subStatus: subStatus,
-        },
-      });
+      if (isEditMode && schedule?.id) {
+        // 수정 모드
+        // 메인 작가가 없으면 미배정 상태로
+        const subStatus = formData.mainUser ? 'assigned' : 'unassigned';
+
+        await updateSchedule({
+          variables: {
+            id: schedule.id,
+            mainUser: formData.mainUser || null,
+            subUser: formData.subUser || null,
+            groom: formData.groom,
+            bride: formData.bride,
+            date: formData.date,
+            time: formData.time,
+            venue: formData.venue,
+            location: formData.location || null,
+            memo: formData.memo || formData.request || null,
+            subStatus: subStatus,
+          },
+        });
+      } else {
+        // 생성 모드
+        // 메인 작가가 없으면 미배정 상태로
+        const subStatus = formData.mainUser ? 'assigned' : 'unassigned';
+
+        await createSchedule({
+          variables: {
+            mainUser: formData.mainUser || null,
+            subUser: formData.subUser || null,
+            groom: formData.groom,
+            bride: formData.bride,
+            date: formData.date,
+            time: formData.time,
+            venue: formData.venue,
+            location: formData.location || null,
+            memo: formData.memo || formData.request || null,
+            status: 'pending',
+            subStatus: subStatus,
+          },
+        });
+      }
 
       // 성공 시 폼 초기화 및 모달 닫기
       setFormData({
@@ -93,9 +173,13 @@ export default function CreateScheduleModal({
       });
       onSuccess();
     } catch (err) {
-      console.error('일정 생성 오류:', err);
+      console.error(isEditMode ? '일정 수정 오류:' : '일정 생성 오류:', err);
       alert(
-        err instanceof Error ? err.message : '일정 생성 중 오류가 발생했습니다.'
+        err instanceof Error
+          ? err.message
+          : isEditMode
+          ? '일정 수정 중 오류가 발생했습니다.'
+          : '일정 생성 중 오류가 발생했습니다.'
       );
     }
   };
@@ -123,7 +207,9 @@ export default function CreateScheduleModal({
       <div className='w-full max-w-[520px] rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto'>
         {/* Header */}
         <div className='flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white z-10'>
-          <h2 className='text-lg font-semibold'>새 일정 추가</h2>
+          <h2 className='text-lg font-semibold'>
+            {isEditMode ? '일정 수정' : '새 일정 추가'}
+          </h2>
           <button
             onClick={handleClose}
             className='text-gray-400 hover:text-gray-600'
@@ -278,16 +364,22 @@ export default function CreateScheduleModal({
               type='button'
               onClick={handleClose}
               className='px-4 py-2 rounded-lg border text-sm hover:bg-gray-50'
-              disabled={creating}
+              disabled={creating || updating}
             >
               취소
             </button>
             <button
               type='submit'
               className='px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
-              disabled={creating}
+              disabled={creating || updating}
             >
-              {creating ? '추가 중...' : '추가'}
+              {isEditMode
+                ? updating
+                  ? '수정 중...'
+                  : '수정완료'
+                : creating
+                ? '추가 중...'
+                : '추가'}
             </button>
           </div>
         </form>

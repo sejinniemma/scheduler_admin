@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client/react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
-import { UPDATE_SCHEDULE } from '@/src/client/graphql/Schedule';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
+import type { Schedule } from '@/src/types/schedule';
 
 type SubStatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
 
 export default function SchedulesPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<SubStatusFilter>('all');
-  const [updateSchedule] = useMutation(UPDATE_SCHEDULE);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
 
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
@@ -53,23 +55,9 @@ export default function SchedulesPage() {
     }
   };
 
-  const handleAssign = async (scheduleId: string) => {
-    try {
-      await updateSchedule({
-        variables: {
-          id: scheduleId,
-          subStatus: 'assigned',
-        },
-      });
-
-      // 성공 시 스케줄 목록 새로고침
-      await refetch();
-    } catch (err) {
-      console.error('배정 오류:', err);
-      alert(
-        err instanceof Error ? err.message : '배정 중 오류가 발생했습니다.'
-      );
-    }
+  const handleEdit = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+    setIsEditModalOpen(true);
   };
 
   if (isLoading) {
@@ -114,7 +102,7 @@ export default function SchedulesPage() {
       <div className='flex justify-end'>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+          className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
         >
           + 새 일정
         </button>
@@ -201,18 +189,14 @@ export default function SchedulesPage() {
                         {getSubStatusLabel(schedule.subStatus)}
                       </span>
                     </td>
-                    {/* 상세 - 배정 버튼 */}
+                    {/* 상세 - 수정 버튼 */}
                     <td className='p-[16px]'>
-                      {schedule.subStatus === 'unassigned' ? (
-                        <button
-                          onClick={() => handleAssign(schedule.id)}
-                          className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
-                        >
-                          배정
-                        </button>
-                      ) : (
-                        <span className='text-body4 text-default'>-</span>
-                      )}
+                      <button
+                        onClick={() => handleEdit(schedule)}
+                        className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+                      >
+                        수정
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -228,6 +212,22 @@ export default function SchedulesPage() {
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => {
           setIsCreateModalOpen(false);
+          refetch();
+        }}
+      />
+
+      {/* 일정 수정 모달 */}
+      <CreateScheduleModal
+        open={isEditModalOpen && !!selectedSchedule}
+        // @ts-expect-error - CreateScheduleModal은 JS 파일이므로 타입 추론이 제한적
+        schedule={selectedSchedule}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedSchedule(null);
+        }}
+        onSuccess={() => {
+          setIsEditModalOpen(false);
+          setSelectedSchedule(null);
           refetch();
         }}
       />

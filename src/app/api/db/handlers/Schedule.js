@@ -54,8 +54,8 @@ export const typeDefs = gql`
 
   type Mutation {
     createSchedule(
-      mainUser: ID!
-      subUser: ID!
+      mainUser: String!
+      subUser: String
       groom: String!
       bride: String!
       date: String!
@@ -69,8 +69,8 @@ export const typeDefs = gql`
 
     updateSchedule(
       id: ID!
-      mainUser: ID
-      subUser: ID
+      mainUser: String
+      subUser: String
       groom: String
       bride: String
       date: String
@@ -201,8 +201,6 @@ export const resolvers = {
       const partUserIds = await getPartUserIds(context.user.adminPart);
 
       // 이번달 범위 내에서:
-      // - 오늘 날짜: subStatus가 'unassigned'인 것만
-      // - 오늘 이후 날짜: subStatus 상관없이 모두
       const schedules = await Schedule.find({
         $and: [
           {
@@ -216,7 +214,7 @@ export const resolvers = {
           },
           {
             $or: [
-              { date: today, subStatus: 'unassigned' }, // 오늘 날짜는 unassigned만
+              { date: today, status: 'pending' }, // 오늘 날짜는 아직 시작이 안된 것만
               { date: { $gt: today } }, // 오늘 이후는 모두
             ],
           },
@@ -245,7 +243,8 @@ export const resolvers = {
             });
             if (mainUserDocForReport) {
               const mainUserReport = reports.find(
-                (r) => r.user.toString() === mainUserDocForReport._id.toString()
+                (r) =>
+                  r?.user?.toString() === mainUserDocForReport.id.toString()
               );
               if (mainUserReport?.memo) {
                 mainUserMemo = mainUserReport.memo;
@@ -260,7 +259,7 @@ export const resolvers = {
               if (subUserDocForReport) {
                 const subUserReport = reports.find(
                   (r) =>
-                    r.user.toString() === subUserDocForReport._id.toString()
+                    r?.user?.toString() === subUserDocForReport._d.toString()
                 );
                 if (subUserReport?.memo) {
                   subUserMemo = subUserReport.memo;
@@ -330,7 +329,7 @@ export const resolvers = {
 
       return Schedule.create({
         mainUser,
-        subUser,
+        subUser: subUser || '',
         groom,
         bride,
         date,
