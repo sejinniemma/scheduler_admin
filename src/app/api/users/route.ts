@@ -17,7 +17,21 @@ export async function GET(request: NextRequest) {
     }
 
     await connectToDatabase();
-    const users = await UserModel.find({}).sort({ createdAt: -1 });
+
+    // 어드민 파트별 필터링
+    if (!session.user.adminPart) {
+      return NextResponse.json(
+        { error: '어드민 권한이 필요합니다.' },
+        { status: 403 }
+      );
+    }
+
+    // 자신의 파트에 해당하는 유저만 조회 (어드민 제외)
+    const query = {
+      role: session.user.adminPart, // VIDEOGRAPHER, PHOTOGRAPHER, IPHONESNAPPER 중 하나
+    };
+
+    const users = await UserModel.find(query).sort({ createdAt: -1 });
 
     // 날짜를 문자열로 변환
     const formattedUsers = users.map((user) => ({

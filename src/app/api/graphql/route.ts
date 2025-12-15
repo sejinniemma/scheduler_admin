@@ -31,7 +31,12 @@ const handler = startServerAndCreateNextHandler(server, {
     const session = await getServerSession(authOptions as NextAuthOptions);
     return {
       db,
-      user: session?.user ? { id: session.user.id } : null,
+      user: session?.user
+        ? {
+            id: session.user.id,
+            adminPart: session.user.adminPart,
+          }
+        : null,
     };
   },
 });

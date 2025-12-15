@@ -31,6 +31,7 @@ export const authOptions = {
             name: result.user.name,
             phone: result.user.phone,
             role: result.user.role,
+            adminPart: result.user.adminPart, // 어드민 파트 정보
           };
         } catch (error) {
           console.error('인증 오류:', error);
@@ -46,6 +47,7 @@ export const authOptions = {
         token.role = user.role;
         token.name = user.name;
         token.phone = user.phone;
+        token.adminPart = user.adminPart; // 어드민 파트 정보
       }
       return token;
     },
@@ -55,6 +57,7 @@ export const authOptions = {
         session.user.name = token.name;
         session.user.role = token.role;
         session.user.phone = token.phone;
+        session.user.adminPart = token.adminPart; // 어드민 파트 정보
       }
       return session;
     },

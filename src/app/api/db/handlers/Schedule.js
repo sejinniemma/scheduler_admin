@@ -1,6 +1,27 @@
 import Schedule from '../models/Schedule';
-import { connectToDatabase } from '../mongodb';
+import User from '../models/User';
 import { gql } from '@apollo/client';
+
+// 파트별 유저 ID 목록 가져오기 (헬퍼 함수)
+async function getPartUserIds(adminPart) {
+  const partUsers = await User.find({ role: adminPart }).select('id').lean();
+  return partUsers.map((u) => u.id);
+}
+
+// 파트별 스케줄 필터 쿼리 생성 (헬퍼 함수)
+async function buildPartScheduleQuery(adminPart, filters = {}) {
+  const partUserIds = await getPartUserIds(adminPart);
+
+  const query = {
+    $or: [
+      { mainUser: { $in: partUserIds } },
+      { subUser: { $in: partUserIds } },
+    ],
+    ...filters,
+  };
+
+  return { query, partUserIds };
+}
 
 export const typeDefs = gql`
   scalar DateTime
@@ -71,52 +92,44 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     schedules: async (parent, { date, subStatus, status }, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
-      }
-      await connectToDatabase();
-
-      // 기본 쿼리: 로그인한 사용자가 mainUser 또는 subUser인 스케줄만 조회
-      const query = {
-        $or: [{ mainUser: context.user.id }, { subUser: context.user.id }],
-      };
-
-      // 필터 추가
-      if (date) {
-        query.date = date;
-      }
-      if (subStatus) {
-        query.subStatus = subStatus;
-      } else {
-        // subStatus가 없으면 assigned와 completed만 가져오기
-        query.subStatus = { $in: ['assigned', 'completed'] };
-      }
-      if (status) {
-        query.status = status;
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
 
-      const schedules = await Schedule.find(query);
+      // 필터 조건 구성
+      const filters = {};
+      if (date) filters.date = date;
+      if (status) filters.status = status;
+      filters.subStatus = subStatus || { $in: ['assigned', 'completed'] };
 
-      // time 기준 정렬 (더 빠른 시간이 앞에)
-      return schedules.sort((a, b) => a.time.localeCompare(b.time));
+      // 파트별 쿼리 생성
+      const { query } = await buildPartScheduleQuery(
+        context.user.adminPart,
+        filters
+      );
+
+      return Schedule.find(query).sort({ time: 1 });
     },
 
     schedule: async (parent, { id }, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
-      await connectToDatabase();
+
       const schedule = await Schedule.findOne({ id });
       if (!schedule) {
         throw new Error('스케줄을 찾을 수 없습니다.');
       }
-      // 본인이 mainUser 또는 subUser인지 확인
+
+      // 파트별 권한 확인
+      const partUserIds = await getPartUserIds(context.user.adminPart);
       if (
-        schedule.mainUser !== context.user.id &&
-        schedule.subUser !== context.user.id
+        !partUserIds.includes(schedule.mainUser) &&
+        !partUserIds.includes(schedule.subUser)
       ) {
         throw new Error('권한이 없습니다.');
       }
+
       return schedule;
     },
   },
@@ -139,11 +152,11 @@ export const resolvers = {
       },
       context
     ) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
-      await connectToDatabase();
-      const schedule = new Schedule({
+
+      return Schedule.create({
         mainUser,
         subUser,
         groom,
@@ -156,88 +169,86 @@ export const resolvers = {
         status,
         subStatus,
       });
-      return await schedule.save();
     },
 
     updateSchedule: async (parent, { id, ...updates }, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
-      await connectToDatabase();
+
       const schedule = await Schedule.findOne({ id });
       if (!schedule) {
         throw new Error('스케줄을 찾을 수 없습니다.');
       }
-      // 본인이 mainUser 또는 subUser인지 확인
+
+      // 파트별 권한 확인
+      const partUserIds = await getPartUserIds(context.user.adminPart);
       if (
-        schedule.mainUser !== context.user.id &&
-        schedule.subUser !== context.user.id
+        !partUserIds.includes(schedule.mainUser) &&
+        !partUserIds.includes(schedule.subUser)
       ) {
         throw new Error('권한이 없습니다.');
       }
+
       Object.assign(schedule, updates);
-      return await schedule.save();
+      return schedule.save();
     },
 
     confirmSchedules: async (parent, { scheduleIds }, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
-      await connectToDatabase();
 
-      if (!scheduleIds || scheduleIds.length === 0) {
+      if (!scheduleIds?.length) {
         throw new Error('스케줄 ID 배열이 필요합니다.');
       }
 
-      // 모든 스케줄을 찾아서 권한 확인 및 업데이트
+      const partUserIds = await getPartUserIds(context.user.adminPart);
       const schedules = await Schedule.find({ id: { $in: scheduleIds } });
 
-      if (schedules.length === 0) {
+      if (!schedules.length) {
         throw new Error('스케줄을 찾을 수 없습니다.');
       }
 
-      // 권한 확인 및 업데이트 (assigned인 것만)
-      let updatedCount = 0;
-      for (const schedule of schedules) {
-        // 본인이 mainUser 또는 subUser인지 확인
-        if (
-          schedule.mainUser !== context.user.id &&
-          schedule.subUser !== context.user.id
-        ) {
-          continue; // 권한이 없는 스케줄은 건너뛰기
-        }
+      // 권한이 있는 스케줄 중 assigned 상태인 것만 업데이트
+      const validSchedules = schedules.filter(
+        (s) =>
+          (partUserIds.includes(s.mainUser) ||
+            partUserIds.includes(s.subUser)) &&
+          s.subStatus === 'assigned'
+      );
 
-        // subStatus가 'assigned'인 것만 업데이트
-        if (schedule.subStatus === 'assigned') {
-          schedule.subStatus = 'completed';
-          await schedule.save();
-          updatedCount++;
-        }
-      }
+      await Schedule.updateMany(
+        { id: { $in: validSchedules.map((s) => s.id) } },
+        { $set: { subStatus: 'completed' } }
+      );
 
       return {
         success: true,
-        updatedCount,
+        updatedCount: validSchedules.length,
       };
     },
 
     deleteSchedule: async (parent, { id }, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
-      await connectToDatabase();
+
       const schedule = await Schedule.findOne({ id });
       if (!schedule) {
         return false;
       }
-      // 본인이 mainUser 또는 subUser인지 확인
+
+      // 파트별 권한 확인
+      const partUserIds = await getPartUserIds(context.user.adminPart);
       if (
-        schedule.mainUser === context.user.id ||
-        schedule.subUser === context.user.id
+        partUserIds.includes(schedule.mainUser) ||
+        partUserIds.includes(schedule.subUser)
       ) {
         await Schedule.findOneAndDelete({ id });
         return true;
       }
+
       return false;
     },
   },

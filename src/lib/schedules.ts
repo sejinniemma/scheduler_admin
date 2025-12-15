@@ -18,9 +18,23 @@ export async function getAllAssignedSchedules(): Promise<Schedule[]> {
 
     await connectToDatabase();
 
-    const query = {
-      $or: [{ mainUser: session.user.id }, { subUser: session.user.id }],
+    // 어드민 파트별 필터링
+    if (!session.user.adminPart) {
+      return [];
+    }
+
+    // 자신의 파트에 해당하는 유저들의 스케줄만 조회
+    const partUsers = await UserModel.find({
+      role: session.user.adminPart,
+    }).select('id');
+    const partUserIds = partUsers.map((u) => u.id);
+
+    const query: any = {
       subStatus: { $in: ['assigned', 'completed'] },
+      $or: [
+        { mainUser: { $in: partUserIds } },
+        { subUser: { $in: partUserIds } },
+      ],
     };
 
     const schedules = await ScheduleModel.find(query);
@@ -82,14 +96,23 @@ export async function getTodaySchedules(): Promise<Schedule[]> {
   try {
     const session = await getServerSession(authOptions as NextAuthOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.id || !session.user.adminPart) {
       return [];
     }
 
     await connectToDatabase();
 
+    // 자신의 파트에 해당하는 유저들의 스케줄만 조회
+    const partUsers = await UserModel.find({
+      role: session.user.adminPart,
+    }).select('id');
+    const partUserIds = partUsers.map((u) => u.id);
+
     const query = {
-      $or: [{ mainUser: session.user.id }, { subUser: session.user.id }],
+      $or: [
+        { mainUser: { $in: partUserIds } },
+        { subUser: { $in: partUserIds } },
+      ],
       date: getToday(),
       subStatus: 'assigned',
     };
@@ -101,20 +124,20 @@ export async function getTodaySchedules(): Promise<Schedule[]> {
       a.time.localeCompare(b.time)
     );
 
-    // User 찾기 (Report 조회를 위해)
-    const user = await UserModel.findOne({ id: session.user.id });
-    if (!user) {
-      return [];
-    }
+    // // User 찾기 (Report 조회를 위해)
+    // const user = await UserModel.findOne({ id: session.user.id });
+    // if (!user) {
+    //   return [];
+    // }
 
     // 각 스케줄에 대한 Report의 currentStep 가져오기
     const schedulesWithCurrentStep = await Promise.all(
       sortedSchedules.map(async (schedule) => {
         // 해당 스케줄에 대한 Report 찾기
-        const report = await ReportModel.findOne({
-          schedule: schedule._id,
-          user: user._id,
-        });
+        // const report = await ReportModel.findOne({
+        //   schedule: schedule._id,
+        //   user: user._id,
+        // });
 
         return {
           id: schedule.id,
@@ -129,7 +152,7 @@ export async function getTodaySchedules(): Promise<Schedule[]> {
           memo: schedule.memo,
           status: schedule.status,
           subStatus: schedule.subStatus,
-          currentStep: report?.currentStep ?? 0,
+          // currentStep: report?.currentStep ?? 0,
           createdAt: schedule.createdAt?.toISOString(),
           updatedAt: schedule.updatedAt?.toISOString(),
         };

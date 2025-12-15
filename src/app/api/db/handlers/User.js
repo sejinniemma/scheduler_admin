@@ -69,11 +69,17 @@ export const resolvers = {
     },
 
     users: async (parent, args, context) => {
-      if (!context.user) {
-        throw new Error('인증이 필요합니다.');
+      if (!context.user || !context.user.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
       }
       await connectToDatabase();
-      return await User.find({});
+
+      // 자신의 파트에 해당하는 유저만 조회 (어드민 제외)
+      const query = {
+        role: context.user.adminPart, // VIDEOGRAPHER, PHOTOGRAPHER, IPHONESNAPPER 중 하나
+      };
+
+      return await User.find(query);
     },
   },
 
@@ -235,8 +241,17 @@ export async function verifyUserCredentials(phone, name) {
   try {
     await connectToDatabase();
 
-    // 전화번호로 User 찾기
-    const user = await User.findOne({ phone, role: 'ADMIN' });
+    // 전화번호로 User 찾기 (어드민 역할만)
+    const user = await User.findOne({
+      phone,
+      role: {
+        $in: [
+          'ADMIN_VIDEOGRAPHER',
+          'ADMIN_PHOTOGRAPHER',
+          'ADMIN_IPHONESNAPPER',
+        ],
+      },
+    });
 
     if (!user) {
       return {
@@ -255,6 +270,12 @@ export async function verifyUserCredentials(phone, name) {
       };
     }
 
+    // 어드민 파트 정보 추출
+    let adminPart = null;
+    if (user.role.startsWith('ADMIN_')) {
+      adminPart = user.role.replace('ADMIN_', '');
+    }
+
     return {
       success: true,
       user: {
@@ -262,6 +283,7 @@ export async function verifyUserCredentials(phone, name) {
         name: user.name,
         phone: user.phone,
         role: user.role,
+        adminPart: adminPart, // VIDEOGRAPHER, PHOTOGRAPHER, IPHONESNAPPER 중 하나
         address: user.address,
         mainLocation: user.mainLocation,
         hasVehicle: user.hasVehicle,

@@ -19,8 +19,28 @@ export async function GET(request: NextRequest) {
 
     await connectToDatabase();
 
-    // 모든 스케줄 가져오기 (필터 없이)
-    const schedules = await ScheduleModel.find({}).sort({
+    // 어드민 파트별 필터링
+    if (!session.user.adminPart) {
+      return NextResponse.json(
+        { error: '어드민 권한이 필요합니다.' },
+        { status: 403 }
+      );
+    }
+
+    // 자신의 파트에 해당하는 유저들의 스케줄만 조회
+    const partUsers = await UserModel.find({
+      role: session.user.adminPart,
+    }).select('id');
+    const partUserIds = partUsers.map((u) => u.id);
+
+    const scheduleQuery = {
+      $or: [
+        { mainUser: { $in: partUserIds } },
+        { subUser: { $in: partUserIds } },
+      ],
+    };
+
+    const schedules = await ScheduleModel.find(scheduleQuery).sort({
       date: 1,
       time: 1,
     });

@@ -12,7 +12,14 @@ const UserSchema = new mongoose.Schema(
     gender: { type: String, enum: ['MALE', 'FEMALE'] },
     role: {
       type: String,
-      enum: ['ADMIN', 'VIDEOGRAPHER', 'PHOTOGRAPHER', 'IPHONESNAPPER'], // 어드민, 영상, 사진, 아이폰스냅
+      enum: [
+        'ADMIN_VIDEOGRAPHER',
+        'ADMIN_PHOTOGRAPHER',
+        'ADMIN_IPHONESNAPPER',
+        'VIDEOGRAPHER',
+        'PHOTOGRAPHER',
+        'IPHONESNAPPER',
+      ], // 파트별 어드민, 영상, 사진, 아이폰스냅
       default: 'PHOTOGRAPHER',
     },
     address: { type: String },
