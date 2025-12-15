@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useMutation } from '@apollo/client/react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
+import { UPDATE_SCHEDULE } from '@/src/client/graphql/Schedule';
 
 type SubStatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
 
 export default function SchedulesPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<SubStatusFilter>('all');
+  const [updateSchedule] = useMutation(UPDATE_SCHEDULE);
 
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
@@ -50,20 +53,12 @@ export default function SchedulesPage() {
 
   const handleAssign = async (scheduleId: string) => {
     try {
-      const response = await fetch('/api/schedules/update', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scheduleId,
+      await updateSchedule({
+        variables: {
+          id: scheduleId,
           subStatus: 'assigned',
-        }),
+        },
       });
-
-      if (!response.ok) {
-        throw new Error('배정에 실패했습니다.');
-      }
 
       // 성공 시 스케줄 목록 새로고침
       await refetch();

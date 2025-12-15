@@ -80,6 +80,7 @@ export const UPDATE_SCHEDULE = gql`
     $location: String
     $memo: String
     $status: String
+    $subStatus: String
     $currentStep: Int
   ) {
     updateSchedule(
@@ -90,6 +91,7 @@ export const UPDATE_SCHEDULE = gql`
       location: $location
       memo: $memo
       status: $status
+      subStatus: $subStatus
       currentStep: $currentStep
     ) {
       id
@@ -99,6 +101,7 @@ export const UPDATE_SCHEDULE = gql`
       location
       memo
       status
+      subStatus
       currentStep
     }
   }
