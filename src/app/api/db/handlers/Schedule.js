@@ -28,8 +28,8 @@ export const typeDefs = gql`
 
   type Schedule {
     id: ID!
-    mainUser: ID!
-    subUser: ID!
+    mainUser: String!
+    subUser: String!
     groom: String!
     bride: String!
     date: String!
@@ -109,7 +109,25 @@ export const resolvers = {
         filters
       );
 
-      return Schedule.find(query).sort({ time: 1 });
+      const schedules = await Schedule.find(query).sort({ time: 1 });
+
+      // 각 스케줄에 대한 User 이름 가져오기
+      const schedulesWithUserNames = await Promise.all(
+        schedules.map(async (schedule) => {
+          const mainUserDoc = await User.findOne({ id: schedule.mainUser });
+          const subUserDoc = schedule.subUser
+            ? await User.findOne({ id: schedule.subUser })
+            : null;
+
+          return {
+            ...schedule.toObject(),
+            mainUser: mainUserDoc?.name || schedule.mainUser,
+            subUser: subUserDoc?.name || schedule.subUser || '-',
+          };
+        })
+      );
+
+      return schedulesWithUserNames;
     },
 
     schedulesList: async (parent, args, context) => {
@@ -160,7 +178,23 @@ export const resolvers = {
         ],
       }).sort({ date: 1, time: 1 });
 
-      return schedules;
+      // 각 스케줄에 대한 User 이름 가져오기
+      const schedulesWithUserNames = await Promise.all(
+        schedules.map(async (schedule) => {
+          const mainUserDoc = await User.findOne({ id: schedule.mainUser });
+          const subUserDoc = schedule.subUser
+            ? await User.findOne({ id: schedule.subUser })
+            : null;
+
+          return {
+            ...schedule.toObject(),
+            mainUser: mainUserDoc?.name || schedule.mainUser,
+            subUser: subUserDoc?.name || schedule.subUser || '-',
+          };
+        })
+      );
+
+      return schedulesWithUserNames;
     },
 
     schedule: async (parent, { id }, context) => {

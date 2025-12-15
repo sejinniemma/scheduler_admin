@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { formatDateForGroup } from '@/src/lib/utiles';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
+import StatusBadge from '@/src/components/StatusBadge';
 
 type StatusFilter =
   | 'all'
@@ -40,40 +41,6 @@ export default function DashboardPage() {
     if (dateCompare !== 0) return dateCompare;
     return a.time.localeCompare(b.time);
   });
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '대기';
-      case 'wakeup':
-        return '기상';
-      case 'departure':
-        return '출발';
-      case 'arrival':
-        return '도착';
-      case 'completed':
-        return '완료';
-      case 'delayed':
-        return '지연';
-      case 'canceled':
-        return '취소';
-      default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green';
-      case 'pending':
-        return 'text-yellow';
-      case 'canceled':
-        return 'text-red';
-      default:
-        return 'text-default';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -182,13 +149,7 @@ export default function DashboardPage() {
                     </td>
                     {/* status */}
                     <td className='p-[16px]'>
-                      <span
-                        className={`text-caption1 font-medium ${getStatusColor(
-                          schedule.status
-                        )}`}
-                      >
-                        {getStatusLabel(schedule.status)}
-                      </span>
+                      <StatusBadge status={schedule.status} />
                     </td>
                   </tr>
                 ))}
