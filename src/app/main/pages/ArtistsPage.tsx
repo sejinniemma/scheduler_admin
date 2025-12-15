@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { GET_USERS } from '@/src/client/graphql/User';
+import AuthorAddModal from '@/src/components/AuthorAddModal';
 
 interface User {
   id: string;
@@ -32,8 +33,10 @@ export default function ArtistsPage() {
     data,
     loading: isLoading,
     error: queryError,
+    refetch,
   } = useQuery<GetUsersData>(GET_USERS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const users: User[] = data?.users || [];
   const error = queryError
@@ -114,7 +117,15 @@ export default function ArtistsPage() {
       <h1 className='text-body4 text-normal font-semibold mb-[40px]'>
         작가관리
       </h1>
-
+      {/* 작가추가 */}
+      <div className='flex justify-end mb-[20px]'>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+        >
+          + 작가추가
+        </button>
+      </div>
       {/* 상태 탭 */}
       <div className='flex gap-[10px] mb-[20px] border-b border-line-base'>
         {statusTabs.map((tab) => (
@@ -207,6 +218,16 @@ export default function ArtistsPage() {
           </div>
         </div>
       )}
+
+      {/* 작가 추가 모달 */}
+      <AuthorAddModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          setIsCreateModalOpen(false);
+          refetch();
+        }}
+      />
     </div>
   );
 }

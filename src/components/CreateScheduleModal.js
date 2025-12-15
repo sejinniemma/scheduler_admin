@@ -206,13 +206,13 @@ export default function CreateScheduleModal({
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40'>
       <div className='w-full max-w-[520px] rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto'>
         {/* Header */}
-        <div className='flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white z-10'>
+        <div className='flex items-center justify-between px-6 py-4 border-b  border-line-base sticky top-0 bg-white z-10'>
           <h2 className='text-lg font-semibold'>
             {isEditMode ? '일정 수정' : '새 일정 추가'}
           </h2>
           <button
             onClick={handleClose}
-            className='text-gray-400 hover:text-gray-600'
+            className='text-gray-400 cursor-pointer hover:text-gray-600'
           >
             <X size={20} />
           </button>
@@ -359,18 +359,18 @@ export default function CreateScheduleModal({
           </div>
 
           {/* Footer */}
-          <div className='flex justify-end gap-2 px-6 py-4 border-t sticky bottom-0 bg-white'>
+          <div className='flex justify-end gap-2 px-6 py-4 border-t border-line-base sticky bottom-0 bg-white'>
             <button
               type='button'
               onClick={handleClose}
-              className='px-4 py-2 rounded-lg border text-sm hover:bg-gray-50'
+              className='px-4 py-2 rounded-lg cursor-pointer border text-sm hover:bg-gray-50'
               disabled={creating || updating}
             >
               취소
             </button>
             <button
               type='submit'
-              className='px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='px-4 py-2 rounded-lg bg-blue-600 cursor-pointer text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
               disabled={creating || updating}
             >
               {isEditMode

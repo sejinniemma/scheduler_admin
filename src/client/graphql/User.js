@@ -38,15 +38,43 @@ export const CREATE_USER = gql`
   mutation CreateUser(
     $name: String!
     $phone: String!
-    $tenantId: String!
+    $address: String
+    $mainLocation: String
+    $startDate: DateTime!
     $role: String
+    $hasVehicle: Boolean
+    $birthDate: DateTime
+    $gender: String
+    $status: String
+    $memo: String
   ) {
-    createUser(name: $name, phone: $phone, tenantId: $tenantId, role: $role) {
+    createUser(
+      name: $name
+      phone: $phone
+      address: $address
+      mainLocation: $mainLocation
+      startDate: $startDate
+      role: $role
+      hasVehicle: $hasVehicle
+      birthDate: $birthDate
+      gender: $gender
+      status: $status
+      memo: $memo
+    ) {
       id
       name
       phone
+      gender
       role
-      tenantId
+      address
+      mainLocation
+      hasVehicle
+      startDate
+      birthDate
+      status
+      memo
+      createdAt
+      updatedAt
     }
   }
 `;
