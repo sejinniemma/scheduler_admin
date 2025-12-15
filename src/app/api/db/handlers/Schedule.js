@@ -45,6 +45,7 @@ export const typeDefs = gql`
 
   type Query {
     schedules(date: String, subStatus: String, status: String): [Schedule!]!
+    schedulesList: [Schedule!]!
     schedule(id: ID!): Schedule
   }
 
@@ -109,6 +110,57 @@ export const resolvers = {
       );
 
       return Schedule.find(query).sort({ time: 1 });
+    },
+
+    schedulesList: async (parent, args, context) => {
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
+      }
+
+      // 오늘 날짜 가져오기 (YYYY-MM-DD 형식)
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const day = now.getDate();
+      const today = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+        day
+      ).padStart(2, '0')}`;
+
+      // 이번달의 시작일과 종료일 가져오기
+      const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const endDate = new Date(year, month + 1, 0);
+      const endDateStr = `${year}-${String(month + 1).padStart(
+        2,
+        '0'
+      )}-${String(endDate.getDate()).padStart(2, '0')}`;
+
+      // 파트별 유저 ID 목록 가져오기
+      const partUserIds = await getPartUserIds(context.user.adminPart);
+
+      // 이번달 범위 내에서:
+      // - 오늘 날짜: subStatus가 'unassigned'인 것만
+      // - 오늘 이후 날짜: subStatus 상관없이 모두
+      const schedules = await Schedule.find({
+        $and: [
+          {
+            $or: [
+              { mainUser: { $in: partUserIds } },
+              { subUser: { $in: partUserIds } },
+            ],
+          },
+          {
+            date: { $gte: startDate, $lte: endDateStr }, // 이번달 범위
+          },
+          {
+            $or: [
+              { date: today, subStatus: 'unassigned' }, // 오늘 날짜는 unassigned만
+              { date: { $gt: today } }, // 오늘 이후는 모두
+            ],
+          },
+        ],
+      }).sort({ date: 1, time: 1 });
+
+      return schedules;
     },
 
     schedule: async (parent, { id }, context) => {

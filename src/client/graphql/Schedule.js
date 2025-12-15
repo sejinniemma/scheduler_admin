@@ -22,6 +22,27 @@ export const GET_SCHEDULES = gql`
   }
 `;
 
+export const GET_SCHEDULES_LIST = gql`
+  query GetSchedulesList {
+    schedulesList {
+      id
+      mainUser
+      subUser
+      groom
+      bride
+      time
+      location
+      venue
+      date
+      memo
+      status
+      subStatus
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 // Schedule Mutations
 export const CREATE_SCHEDULE = gql`
   mutation CreateSchedule(

@@ -1,13 +1,12 @@
 'use client';
 
+import { createContext, useContext, ReactNode, useMemo } from 'react';
+import { useQuery } from '@apollo/client/react';
 import {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useCallback,
-  useEffect,
-} from 'react';
+  GET_SCHEDULES,
+  GET_SCHEDULES_LIST,
+} from '@/src/client/graphql/Schedule';
+import { getToday } from '@/src/lib/utiles';
 import type { Schedule } from '@/src/types/schedule';
 
 type ScheduleEndpoint = 'today' | 'list';
@@ -35,80 +34,51 @@ export function ScheduleProvider({
   endpoint,
   initialSchedules = [],
 }: ScheduleProviderProps) {
-  // 각 endpoint별로 캐시를 유지 (useState가 자동으로 캐시해주지만, endpoint별로 별도 저장 필요)
-  const [cache, setCache] = useState<{
-    today: Schedule[] | null;
-    list: Schedule[] | null;
-  }>({
-    today: null,
-    list: null,
+  // today 엔드포인트: 오늘 날짜, subStatus: 'assigned'
+  // list 엔드포인트: schedulesList 쿼리 사용
+  const todayDate = useMemo(() => getToday(), []);
+
+  const {
+    data,
+    loading,
+    error,
+    refetch: refetchQuery,
+  } = useQuery(endpoint === 'today' ? GET_SCHEDULES : GET_SCHEDULES_LIST, {
+    variables:
+      endpoint === 'today'
+        ? {
+            date: todayDate,
+            subStatus: 'assigned',
+          }
+        : undefined,
+    // Apollo Client가 자동으로 캐싱해줌
+    fetchPolicy: 'cache-and-network', // 캐시를 먼저 보여주고 백그라운드에서 업데이트
+    errorPolicy: 'all', // 에러가 있어도 부분 데이터 반환
   });
 
-  // 현재 endpoint의 캐시된 데이터 사용
-  const cachedData = cache[endpoint];
-  const [schedules, setSchedules] = useState<Schedule[]>(
-    cachedData || initialSchedules
-  );
-  const [isLoading, setIsLoading] = useState(
-    cachedData === null && initialSchedules.length === 0
-  );
-  const [error, setError] = useState<string | null>(null);
-
-  const refreshSchedules = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const apiEndpoint =
-        endpoint === 'today' ? '/api/schedules/today' : '/api/schedules/list';
-      const response = await fetch(apiEndpoint);
-      if (!response.ok) {
-        throw new Error('스케줄을 가져오는데 실패했습니다.');
+  const schedules: Schedule[] = useMemo(() => {
+    if (data) {
+      if (endpoint === 'today') {
+        return (data as { schedules?: Schedule[] }).schedules || [];
+      } else {
+        return (data as { schedulesList?: Schedule[] }).schedulesList || [];
       }
-      const data = await response.json();
-      const fetchedSchedules = data.schedules || [];
-
-      // 캐시에 저장 (useState가 자동으로 유지)
-      setCache((prev) => ({
-        ...prev,
-        [endpoint]: fetchedSchedules,
-      }));
-
-      setSchedules(fetchedSchedules);
-    } catch (err) {
-      console.error('스케줄 새로고침 오류:', err);
-      setError(
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-      );
-    } finally {
-      setIsLoading(false);
     }
-  }, [endpoint]);
+    return initialSchedules;
+  }, [data, endpoint, initialSchedules]);
 
-  // endpoint 변경 시: 캐시에 있으면 즉시 사용, 없으면 fetch
-  useEffect(() => {
-    const cachedData = cache[endpoint];
-    if (cachedData !== null) {
-      // 캐시된 데이터가 있으면 즉시 사용 (useState가 이미 캐시하고 있음)
-      setSchedules(cachedData);
-      setIsLoading(false);
-    } else {
-      // 캐시된 데이터가 없으면 fetch
-      refreshSchedules();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint]); // endpoint만 의존성으로 사용 (cache와 refreshSchedules는 endpoint 변경 시 자동 업데이트)
+  const refreshSchedules = async () => {
+    await refetchQuery();
+  };
 
-  // refetch는 refreshSchedules의 별칭
-  const refetch = useCallback(async () => {
-    await refreshSchedules();
-  }, [refreshSchedules]);
+  const refetch = refreshSchedules;
 
   return (
     <ScheduleContext.Provider
       value={{
         schedules,
-        isLoading,
-        error,
+        isLoading: loading,
+        error: error?.message || null,
         refreshSchedules,
         refetch,
       }}

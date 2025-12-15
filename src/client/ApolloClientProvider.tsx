@@ -2,6 +2,7 @@
 
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client/react';
+import type { ReactNode } from 'react';
 
 const client = new ApolloClient({
   link: new HttpLink({
@@ -10,7 +11,15 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-function ApolloClientProvider({ children, client: providedClient }) {
+interface ApolloClientProviderProps {
+  children: ReactNode;
+  client?: ApolloClient;
+}
+
+function ApolloClientProvider({
+  children,
+  client: providedClient,
+}: ApolloClientProviderProps) {
   return (
     <ApolloProvider client={providedClient || client}>
       {children}
