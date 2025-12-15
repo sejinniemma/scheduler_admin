@@ -50,13 +50,17 @@ export const typeDefs = gql`
 
 export const resolvers = {
   DateTime: DateTimeResolver,
+  Report: {
+    schedule: (parent) => parent.scheduleId,
+    user: (parent) => parent.userId,
+  },
   Query: {
     reports: async (parent, args, context) => {
       if (!context.user) {
         throw new Error('인증이 필요합니다.');
       }
       await connectToDatabase();
-      return await Report.find({ user: context.user.id });
+      return await Report.find({ userId: context.user.id });
     },
 
     report: async (parent, { id }, context) => {
@@ -69,7 +73,7 @@ export const resolvers = {
         throw new Error('보고를 찾을 수 없습니다.');
       }
       // 본인의 보고인지 확인
-      if (report.user.toString() !== context.user.id) {
+      if (report.userId !== context.user.id) {
         throw new Error('권한이 없습니다.');
       }
       return report;
@@ -91,7 +95,7 @@ export const resolvers = {
       ) {
         throw new Error('권한이 없습니다.');
       }
-      return await Report.find({ schedule: schedule._id });
+      return await Report.find({ scheduleId: scheduleId });
     },
 
     reportsByUser: async (parent, { userId }, context) => {
@@ -103,7 +107,7 @@ export const resolvers = {
       if (userId !== context.user.id) {
         throw new Error('권한이 없습니다.');
       }
-      return await Report.find({ user: userId });
+      return await Report.find({ userId: userId });
     },
   },
 
@@ -134,8 +138,8 @@ export const resolvers = {
 
       // 보고 생성
       const report = new Report({
-        schedule: schedule._id,
-        user: context.user.id,
+        scheduleId: scheduleId,
+        userId: context.user.id,
         status,
         estimatedTime,
         currentStep,
@@ -163,7 +167,7 @@ export const resolvers = {
         throw new Error('보고를 찾을 수 없습니다.');
       }
       // 본인의 보고인지 확인
-      if (report.user.toString() !== context.user.id) {
+      if (report.userId !== context.user.id) {
         throw new Error('권한이 없습니다.');
       }
       if (status) report.status = status;

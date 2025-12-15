@@ -9,6 +9,8 @@ export interface Schedule {
   venue?: string;
   date: string;
   memo?: string;
+  mainUserMemo?: string | null;
+  subUserMemo?: string | null;
   status: string;
   subStatus: string;
   currentStep?: number;

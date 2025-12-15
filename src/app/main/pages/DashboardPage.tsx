@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { formatDateForGroup } from '@/src/lib/utiles';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import StatusBadge from '@/src/components/StatusBadge';
+import ScheduleMemoModal from '@/src/components/ScheduleMemoModal';
+import type { Schedule } from '@/src/types/schedule';
 
 type StatusFilter =
   | 'all'
@@ -18,6 +20,10 @@ type StatusFilter =
 export default function DashboardPage() {
   const { schedules, isLoading, error } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 오늘 날짜 포맷팅
   const getTodayDate = () => {
@@ -117,7 +123,8 @@ export default function DashboardPage() {
                   <th className='p-[16px]'>시간</th>
                   <th className='p-[16px]'>메인</th>
                   <th className='p-[16px]'>서브</th>
-                  <th className='p-[16px]'>상태</th>
+                  <th className='p-[16px]'>상태</th>{' '}
+                  <th className='p-[16px]'>메모</th>
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -151,6 +158,36 @@ export default function DashboardPage() {
                     <td className='p-[16px]'>
                       <StatusBadge status={schedule.status} />
                     </td>
+                    {/* memo */}
+                    <td className='p-[16px]'>
+                      {schedule.mainUserMemo || schedule.subUserMemo ? (
+                        <button
+                          onClick={() => {
+                            setSelectedSchedule(schedule);
+                            setIsModalOpen(true);
+                          }}
+                          className='flex flex-col items-center gap-[4px] text-body4 cursor-pointer text-blue hover:opacity-80 transition-opacity mx-auto'
+                        >
+                          <svg
+                            width='12'
+                            height='12'
+                            viewBox='0 0 12 12'
+                            fill='none'
+                            xmlns='http://www.w3.org/2000/svg'
+                          >
+                            <path
+                              d='M3 4.5L6 7.5L9 4.5'
+                              stroke='currentColor'
+                              strokeWidth='1.5'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                            />
+                          </svg>
+                        </button>
+                      ) : (
+                        <span className='text-body4 text-default'>-</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -158,6 +195,13 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* 메모 모달 */}
+      <ScheduleMemoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        schedule={selectedSchedule}
+      />
     </div>
   );
 }

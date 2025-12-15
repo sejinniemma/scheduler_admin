@@ -7,13 +7,13 @@ const ReportSchema = new mongoose.Schema(
       unique: true,
       default: () => new mongoose.Types.ObjectId().toString(),
     },
-    schedule: {
-      type: mongoose.Schema.Types.ObjectId,
+    scheduleId: {
+      type: String,
       ref: 'Schedule',
       required: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
+    userId: {
+      type: String,
       ref: 'User',
       required: true,
     },

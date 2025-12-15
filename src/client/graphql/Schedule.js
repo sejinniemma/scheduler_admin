@@ -14,6 +14,8 @@ export const GET_SCHEDULES = gql`
       venue
       date
       memo
+      mainUserMemo
+      subUserMemo
       status
       subStatus
       createdAt
@@ -35,6 +37,8 @@ export const GET_SCHEDULES_LIST = gql`
       venue
       date
       memo
+      mainUserMemo
+      subUserMemo
       status
       subStatus
       createdAt

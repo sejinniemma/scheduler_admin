@@ -1,5 +1,6 @@
 import Schedule from '../models/Schedule';
 import User from '../models/User';
+import Report from '../models/Report';
 import { gql } from '@apollo/client';
 
 // 파트별 유저 ID 목록 가져오기 (헬퍼 함수)
@@ -37,6 +38,8 @@ export const typeDefs = gql`
     location: String
     venue: String
     memo: String
+    mainUserMemo: String
+    subUserMemo: String
     status: String!
     subStatus: String!
     createdAt: DateTime!
@@ -111,7 +114,7 @@ export const resolvers = {
 
       const schedules = await Schedule.find(query).sort({ time: 1 });
 
-      // 각 스케줄에 대한 User 이름 가져오기
+      // 각 스케줄에 대한 User 이름 및 Report memo 가져오기
       const schedulesWithUserNames = await Promise.all(
         schedules.map(async (schedule) => {
           const mainUserDoc = await User.findOne({ id: schedule.mainUser });
@@ -119,10 +122,52 @@ export const resolvers = {
             ? await User.findOne({ id: schedule.subUser })
             : null;
 
+          // Schedule에 연결된 Report의 memo 가져오기
+          // mainUser와 subUser의 Report memo를 각각 찾음
+          const reports = await Report.find({ scheduleId: schedule.id });
+
+          let mainUserMemo = null;
+          let subUserMemo = null;
+
+          if (reports.length > 0) {
+            // mainUser의 User _id 찾기
+            const mainUserDocForReport = await User.findOne({
+              id: schedule.mainUser,
+            });
+
+            if (mainUserDocForReport) {
+              const mainUserReport = reports.find(
+                (r) => r.userId === schedule.mainUser
+              );
+
+              if (mainUserReport?.memo) {
+                mainUserMemo = mainUserReport.memo;
+              }
+            }
+
+            // subUser의 Report memo 찾기
+            if (schedule.subUser) {
+              const subUserDocForReport = await User.findOne({
+                id: schedule.subUser,
+              });
+              if (subUserDocForReport) {
+                const subUserReport = reports.find(
+                  (r) => r.userId === schedule.subUser
+                );
+                if (subUserReport?.memo) {
+                  subUserMemo = subUserReport.memo;
+                }
+              }
+            }
+          }
+
           return {
             ...schedule.toObject(),
             mainUser: mainUserDoc?.name || schedule.mainUser,
             subUser: subUserDoc?.name || schedule.subUser || '-',
+            memo: schedule.memo || null,
+            mainUserMemo: mainUserMemo || null,
+            subUserMemo: subUserMemo || null,
           };
         })
       );
@@ -178,7 +223,7 @@ export const resolvers = {
         ],
       }).sort({ date: 1, time: 1 });
 
-      // 각 스케줄에 대한 User 이름 가져오기
+      // 각 스케줄에 대한 User 이름 및 Report memo 가져오기
       const schedulesWithUserNames = await Promise.all(
         schedules.map(async (schedule) => {
           const mainUserDoc = await User.findOne({ id: schedule.mainUser });
@@ -186,10 +231,51 @@ export const resolvers = {
             ? await User.findOne({ id: schedule.subUser })
             : null;
 
+          // Schedule에 연결된 Report의 memo 가져오기
+          // mainUser와 subUser의 Report memo를 각각 찾음
+          const reports = await Report.find({ scheduleId: schedule.id });
+
+          let mainUserMemo = null;
+          let subUserMemo = null;
+
+          if (reports.length > 0) {
+            // mainUser의 User _id 찾기
+            const mainUserDocForReport = await User.findOne({
+              id: schedule.mainUser,
+            });
+            if (mainUserDocForReport) {
+              const mainUserReport = reports.find(
+                (r) => r.user.toString() === mainUserDocForReport._id.toString()
+              );
+              if (mainUserReport?.memo) {
+                mainUserMemo = mainUserReport.memo;
+              }
+            }
+
+            // subUser의 Report memo 찾기
+            if (schedule.subUser) {
+              const subUserDocForReport = await User.findOne({
+                id: schedule.subUser,
+              });
+              if (subUserDocForReport) {
+                const subUserReport = reports.find(
+                  (r) =>
+                    r.user.toString() === subUserDocForReport._id.toString()
+                );
+                if (subUserReport?.memo) {
+                  subUserMemo = subUserReport.memo;
+                }
+              }
+            }
+          }
+
           return {
             ...schedule.toObject(),
             mainUser: mainUserDoc?.name || schedule.mainUser,
             subUser: subUserDoc?.name || schedule.subUser || '-',
+            memo: schedule.memo || null,
+            mainUserMemo: mainUserMemo || null,
+            subUserMemo: subUserMemo || null,
           };
         })
       );
