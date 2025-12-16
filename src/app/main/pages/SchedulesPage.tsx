@@ -5,11 +5,11 @@ import { useSchedule } from '@/src/contexts/ScheduleContext';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
 import type { Schedule } from '@/src/types/schedule';
 
-type SubStatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
+type StatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
 
 export default function SchedulesPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
-  const [statusFilter, setStatusFilter] = useState<SubStatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
@@ -19,7 +19,7 @@ export default function SchedulesPage() {
   // 상태별 필터링
   const filteredSchedules = schedules.filter((schedule) => {
     if (statusFilter === 'all') return true;
-    return schedule.subStatus === statusFilter;
+    return schedule.status === statusFilter;
   });
 
   // 전체 스케줄을 날짜와 시간 순으로 정렬
@@ -29,8 +29,8 @@ export default function SchedulesPage() {
     return a.time.localeCompare(b.time);
   });
 
-  const getSubStatusLabel = (subStatus: string) => {
-    switch (subStatus) {
+  const getStatusLabel = (status: string) => {
+    switch (status) {
       case 'assigned':
         return '할당됨';
       case 'completed':
@@ -38,7 +38,28 @@ export default function SchedulesPage() {
       case 'unassigned':
         return '미할당';
       default:
-        return subStatus;
+        return status;
+    }
+  };
+
+  const getReportStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '대기';
+      case 'wakeup':
+        return '기상';
+      case 'departure':
+        return '출발';
+      case 'arrival':
+        return '도착';
+      case 'completed':
+        return '완료';
+      case 'delayed':
+        return '지연';
+      case 'canceled':
+        return '취소';
+      default:
+        return status;
     }
   };
 
@@ -48,6 +69,24 @@ export default function SchedulesPage() {
         return 'text-green';
       case 'pending':
         return 'text-yellow';
+      case 'canceled':
+        return 'text-red';
+      default:
+        return 'text-default';
+    }
+  };
+
+  const getReportStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'text-green';
+      case 'pending':
+      case 'wakeup':
+        return 'text-yellow';
+      case 'departure':
+      case 'arrival':
+        return 'text-blue';
+      case 'delayed':
       case 'canceled':
         return 'text-red';
       default:
@@ -86,7 +125,7 @@ export default function SchedulesPage() {
     );
   }
 
-  const statusTabs: { key: SubStatusFilter; label: string }[] = [
+  const statusTabs: { key: StatusFilter; label: string }[] = [
     { key: 'all', label: '전체' },
     { key: 'unassigned', label: '미할당' },
     { key: 'assigned', label: '할당됨' },
@@ -181,13 +220,38 @@ export default function SchedulesPage() {
                     </td>
                     {/* status */}
                     <td className='p-[16px]'>
-                      <span
-                        className={`text-caption1 font-medium ${getStatusColor(
-                          schedule.status
-                        )}`}
-                      >
-                        {getSubStatusLabel(schedule.subStatus)}
-                      </span>
+                      <div className='flex flex-col gap-[4px] items-center'>
+                        {/* MAIN Report가 있으면 위에 표시 */}
+                        {schedule.mainUserReportStatus && (
+                          <span
+                            className={`text-caption2 font-medium ${getReportStatusColor(
+                              schedule.mainUserReportStatus
+                            )}`}
+                          >
+                            {getReportStatusLabel(
+                              schedule.mainUserReportStatus
+                            )}
+                          </span>
+                        )}
+                        {/* SUB Report가 있으면 아래에, 없으면 Schedule status만 표시 */}
+                        {schedule.subUserReportStatus ? (
+                          <span
+                            className={`text-caption1 font-medium ${getReportStatusColor(
+                              schedule.subUserReportStatus
+                            )}`}
+                          >
+                            {getReportStatusLabel(schedule.subUserReportStatus)}
+                          </span>
+                        ) : (
+                          <span
+                            className={`text-caption1 font-medium ${getStatusColor(
+                              schedule.status
+                            )}`}
+                          >
+                            {getStatusLabel(schedule.status)}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* 상세 - 수정 버튼 */}
                     <td className='p-[16px]'>

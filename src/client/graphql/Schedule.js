@@ -2,8 +2,8 @@ import { gql } from '@apollo/client';
 
 // Schedule Queries
 export const GET_SCHEDULES = gql`
-  query GetSchedules($date: String, $subStatus: String, $status: String) {
-    schedules(date: $date, subStatus: $subStatus, status: $status) {
+  query GetSchedules($date: String, $status: String) {
+    schedules(date: $date, status: $status) {
       id
       mainUser
       subUser
@@ -13,11 +13,13 @@ export const GET_SCHEDULES = gql`
       location
       venue
       date
+      scheduledAt
       memo
       mainUserMemo
       subUserMemo
+      mainUserReportStatus
+      subUserReportStatus
       status
-      subStatus
       createdAt
       updatedAt
     }
@@ -36,11 +38,13 @@ export const GET_SCHEDULES_LIST = gql`
       location
       venue
       date
+      scheduledAt
       memo
       mainUserMemo
       subUserMemo
+      mainUserReportStatus
+      subUserReportStatus
       status
-      subStatus
       createdAt
       updatedAt
     }
@@ -60,7 +64,6 @@ export const CREATE_SCHEDULE = gql`
     $venue: String
     $memo: String
     $status: String
-    $subStatus: String
   ) {
     createSchedule(
       mainUser: $mainUser
@@ -73,7 +76,6 @@ export const CREATE_SCHEDULE = gql`
       venue: $venue
       memo: $memo
       status: $status
-      subStatus: $subStatus
     ) {
       id
       mainUser
@@ -82,11 +84,11 @@ export const CREATE_SCHEDULE = gql`
       bride
       date
       time
+      scheduledAt
       location
       venue
       memo
       status
-      subStatus
     }
   }
 `;
@@ -104,7 +106,6 @@ export const UPDATE_SCHEDULE = gql`
     $venue: String
     $memo: String
     $status: String
-    $subStatus: String
     $currentStep: Int
   ) {
     updateSchedule(
@@ -119,7 +120,6 @@ export const UPDATE_SCHEDULE = gql`
       venue: $venue
       memo: $memo
       status: $status
-      subStatus: $subStatus
       currentStep: $currentStep
     ) {
       id
@@ -129,11 +129,11 @@ export const UPDATE_SCHEDULE = gql`
       bride
       date
       time
+      scheduledAt
       location
       venue
       memo
       status
-      subStatus
       currentStep
     }
   }

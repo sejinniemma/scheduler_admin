@@ -11,6 +11,7 @@ export const typeDefs = gql`
     id: ID!
     schedule: ID!
     user: ID!
+    role: String!
     status: String!
     estimatedTime: String
     currentStep: Int!
@@ -31,6 +32,7 @@ export const typeDefs = gql`
     createReport(
       scheduleId: ID!
       status: String!
+      role: String
       estimatedTime: String
       currentStep: Int
       memo: String
@@ -39,6 +41,7 @@ export const typeDefs = gql`
     updateReport(
       id: ID!
       status: String
+      role: String
       estimatedTime: String
       currentStep: Int
       memo: String
@@ -114,7 +117,7 @@ export const resolvers = {
   Mutation: {
     createReport: async (
       parent,
-      { scheduleId, status, estimatedTime, currentStep = 0, memo },
+      { scheduleId, status, role, estimatedTime, currentStep = 0, memo },
       context
     ) => {
       if (!context.user) {
@@ -136,10 +139,23 @@ export const resolvers = {
         throw new Error('권한이 없습니다.');
       }
 
+      // role 자동 설정 (파라미터로 전달되지 않은 경우)
+      let reportRole = role;
+      if (!reportRole) {
+        if (schedule.mainUser === context.user.id) {
+          reportRole = 'MAIN';
+        } else if (schedule.subUser === context.user.id) {
+          reportRole = 'SUB';
+        } else {
+          throw new Error('역할을 확인할 수 없습니다.');
+        }
+      }
+
       // 보고 생성
       const report = new Report({
         scheduleId: scheduleId,
         userId: context.user.id,
+        role: reportRole,
         status,
         estimatedTime,
         currentStep,
@@ -155,7 +171,7 @@ export const resolvers = {
 
     updateReport: async (
       parent,
-      { id, status, estimatedTime, currentStep, memo },
+      { id, status, role, estimatedTime, currentStep, memo },
       context
     ) => {
       if (!context.user) {
@@ -171,6 +187,7 @@ export const resolvers = {
         throw new Error('권한이 없습니다.');
       }
       if (status) report.status = status;
+      if (role) report.role = role;
       if (estimatedTime !== undefined) report.estimatedTime = estimatedTime;
       if (currentStep !== undefined) report.currentStep = currentStep;
       if (memo !== undefined) report.memo = memo;

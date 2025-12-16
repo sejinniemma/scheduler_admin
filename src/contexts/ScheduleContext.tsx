@@ -34,7 +34,7 @@ export function ScheduleProvider({
   endpoint,
   initialSchedules = [],
 }: ScheduleProviderProps) {
-  // today 엔드포인트: 오늘 날짜, subStatus: 'assigned'
+  // today 엔드포인트: 오늘 날짜, status: 'assigned'
   // list 엔드포인트: schedulesList 쿼리 사용
   const todayDate = useMemo(() => getToday(), []);
 
@@ -48,7 +48,7 @@ export function ScheduleProvider({
       endpoint === 'today'
         ? {
             date: todayDate,
-            subStatus: 'assigned',
+            status: 'assigned',
           }
         : undefined,
     // Apollo Client가 자동으로 캐싱해줌

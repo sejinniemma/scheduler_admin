@@ -35,19 +35,21 @@ export const typeDefs = gql`
     bride: String!
     date: String!
     time: String!
+    scheduledAt: DateTime
     location: String
     venue: String
     memo: String
     mainUserMemo: String
     subUserMemo: String
+    mainUserReportStatus: String
+    subUserReportStatus: String
     status: String!
-    subStatus: String!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
   type Query {
-    schedules(date: String, subStatus: String, status: String): [Schedule!]!
+    schedules(date: String, status: String): [Schedule!]!
     schedulesList: [Schedule!]!
     schedule(id: ID!): Schedule
   }
@@ -64,7 +66,6 @@ export const typeDefs = gql`
       venue: String
       memo: String
       status: String
-      subStatus: String
     ): Schedule!
 
     updateSchedule(
@@ -79,7 +80,6 @@ export const typeDefs = gql`
       venue: String
       memo: String
       status: String
-      subStatus: String
     ): Schedule!
 
     confirmSchedules(scheduleIds: [ID!]!): ConfirmSchedulesResult!
@@ -95,7 +95,7 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    schedules: async (parent, { date, subStatus, status }, context) => {
+    schedules: async (parent, { date, status }, context) => {
       if (!context.user?.adminPart) {
         throw new Error('어드민 권한이 필요합니다.');
       }
@@ -104,7 +104,10 @@ export const resolvers = {
       const filters = {};
       if (date) filters.date = date;
       if (status) filters.status = status;
-      filters.subStatus = subStatus || { $in: ['assigned', 'completed'] };
+      // status가 없으면 assigned 또는 completed 상태만 조회
+      if (!status) {
+        filters.status = { $in: ['assigned', 'completed'] };
+      }
 
       // 파트별 쿼리 생성
       const { query } = await buildPartScheduleQuery(
@@ -122,41 +125,31 @@ export const resolvers = {
             ? await User.findOne({ id: schedule.subUser })
             : null;
 
-          // Schedule에 연결된 Report의 memo 가져오기
-          // mainUser와 subUser의 Report memo를 각각 찾음
+          // Schedule에 연결된 Report의 memo 및 status 가져오기
+          // mainUser와 subUser의 Report memo와 status를 각각 찾음
           const reports = await Report.find({ scheduleId: schedule.id });
 
           let mainUserMemo = null;
           let subUserMemo = null;
+          let mainUserReportStatus = null;
+          let subUserReportStatus = null;
 
           if (reports.length > 0) {
-            // mainUser의 User _id 찾기
-            const mainUserDocForReport = await User.findOne({
-              id: schedule.mainUser,
-            });
-
-            if (mainUserDocForReport) {
-              const mainUserReport = reports.find(
-                (r) => r.userId === schedule.mainUser
-              );
-
-              if (mainUserReport?.memo) {
-                mainUserMemo = mainUserReport.memo;
+            // MAIN role을 가진 Report 찾기
+            const mainReport = reports.find((r) => r.role === 'MAIN');
+            if (mainReport) {
+              mainUserReportStatus = mainReport.status;
+              if (mainReport.memo) {
+                mainUserMemo = mainReport.memo;
               }
             }
 
-            // subUser의 Report memo 찾기
-            if (schedule.subUser) {
-              const subUserDocForReport = await User.findOne({
-                id: schedule.subUser,
-              });
-              if (subUserDocForReport) {
-                const subUserReport = reports.find(
-                  (r) => r.userId === schedule.subUser
-                );
-                if (subUserReport?.memo) {
-                  subUserMemo = subUserReport.memo;
-                }
+            // SUB role을 가진 Report 찾기
+            const subReport = reports.find((r) => r.role === 'SUB');
+            if (subReport) {
+              subUserReportStatus = subReport.status;
+              if (subReport.memo) {
+                subUserMemo = subReport.memo;
               }
             }
           }
@@ -168,6 +161,8 @@ export const resolvers = {
             memo: schedule.memo || null,
             mainUserMemo: mainUserMemo || null,
             subUserMemo: subUserMemo || null,
+            mainUserReportStatus: mainUserReportStatus || null,
+            subUserReportStatus: subUserReportStatus || null,
           };
         })
       );
@@ -214,7 +209,7 @@ export const resolvers = {
           },
           {
             $or: [
-              { date: today, status: 'pending' }, // 오늘 날짜는 아직 시작이 안된 것만
+              { date: today, status: 'unassigned' }, // 오늘 날짜는 아직 시작이 안된 것만
               { date: { $gt: today } }, // 오늘 이후는 모두
             ],
           },
@@ -229,41 +224,31 @@ export const resolvers = {
             ? await User.findOne({ id: schedule.subUser })
             : null;
 
-          // Schedule에 연결된 Report의 memo 가져오기
-          // mainUser와 subUser의 Report memo를 각각 찾음
+          // Schedule에 연결된 Report의 memo 및 status 가져오기
+          // mainUser와 subUser의 Report memo와 status를 각각 찾음
           const reports = await Report.find({ scheduleId: schedule.id });
 
           let mainUserMemo = null;
           let subUserMemo = null;
+          let mainUserReportStatus = null;
+          let subUserReportStatus = null;
 
           if (reports.length > 0) {
-            // mainUser의 User _id 찾기
-            const mainUserDocForReport = await User.findOne({
-              id: schedule.mainUser,
-            });
-            if (mainUserDocForReport) {
-              const mainUserReport = reports.find(
-                (r) =>
-                  r?.user?.toString() === mainUserDocForReport.id.toString()
-              );
-              if (mainUserReport?.memo) {
-                mainUserMemo = mainUserReport.memo;
+            // MAIN role을 가진 Report 찾기
+            const mainReport = reports.find((r) => r.role === 'MAIN');
+            if (mainReport) {
+              mainUserReportStatus = mainReport.status;
+              if (mainReport.memo) {
+                mainUserMemo = mainReport.memo;
               }
             }
 
-            // subUser의 Report memo 찾기
-            if (schedule.subUser) {
-              const subUserDocForReport = await User.findOne({
-                id: schedule.subUser,
-              });
-              if (subUserDocForReport) {
-                const subUserReport = reports.find(
-                  (r) =>
-                    r?.user?.toString() === subUserDocForReport._d.toString()
-                );
-                if (subUserReport?.memo) {
-                  subUserMemo = subUserReport.memo;
-                }
+            // SUB role을 가진 Report 찾기
+            const subReport = reports.find((r) => r.role === 'SUB');
+            if (subReport) {
+              subUserReportStatus = subReport.status;
+              if (subReport.memo) {
+                subUserMemo = subReport.memo;
               }
             }
           }
@@ -275,6 +260,8 @@ export const resolvers = {
             memo: schedule.memo || null,
             mainUserMemo: mainUserMemo || null,
             subUserMemo: subUserMemo || null,
+            mainUserReportStatus: mainUserReportStatus || null,
+            subUserReportStatus: subUserReportStatus || null,
           };
         })
       );
@@ -318,8 +305,7 @@ export const resolvers = {
         location,
         venue,
         memo,
-        status = 'pending',
-        subStatus = 'unassigned',
+        status = 'unassigned',
       },
       context
     ) => {
@@ -338,7 +324,6 @@ export const resolvers = {
         venue,
         memo,
         status,
-        subStatus,
       });
     },
 
@@ -386,12 +371,12 @@ export const resolvers = {
         (s) =>
           (partUserIds.includes(s.mainUser) ||
             partUserIds.includes(s.subUser)) &&
-          s.subStatus === 'assigned'
+          s.status === 'assigned'
       );
 
       await Schedule.updateMany(
         { id: { $in: validSchedules.map((s) => s.id) } },
-        { $set: { subStatus: 'completed' } }
+        { $set: { status: 'completed' } }
       );
 
       return {

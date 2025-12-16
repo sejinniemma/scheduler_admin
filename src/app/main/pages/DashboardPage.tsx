@@ -35,10 +35,14 @@ export default function DashboardPage() {
     return formatDateForGroup(dateString);
   };
 
-  // 상태별 필터링
+  // 상태별 필터링 (Report status 기준)
   const filteredSchedules = schedules.filter((schedule) => {
     if (statusFilter === 'all') return true;
-    return schedule.status === statusFilter;
+    // MAIN Report status 또는 SUB Report status가 필터와 일치하는지 확인
+    return (
+      schedule.mainUserReportStatus === statusFilter ||
+      schedule.subUserReportStatus === statusFilter
+    );
   });
 
   // 전체 스케줄을 날짜와 시간 순으로 정렬
@@ -156,7 +160,20 @@ export default function DashboardPage() {
                     </td>
                     {/* status */}
                     <td className='p-[16px]'>
-                      <StatusBadge status={schedule.status} />
+                      {schedule.mainUserReportStatus ? (
+                        <div className='flex flex-col gap-[4px] items-center'>
+                          {/* MAIN Report가 있으면 위에 표시 */}
+                          <StatusBadge status={schedule.mainUserReportStatus} />
+                          {/* SUB Report가 있으면 아래에 표시 */}
+                          {schedule.subUserReportStatus && (
+                            <StatusBadge
+                              status={schedule.subUserReportStatus}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <span className='text-body4 text-default'>-</span>
+                      )}
                     </td>
                     {/* memo */}
                     <td className='p-[16px]'>
