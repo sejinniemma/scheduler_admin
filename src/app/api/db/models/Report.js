@@ -17,6 +17,11 @@ const ReportSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    role: {
+      type: String,
+      enum: ['MAIN', 'SUB'],
+      required: true,
+    },
     status: {
       type: String,
       enum: [
