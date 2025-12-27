@@ -54,7 +54,7 @@ export const GET_SCHEDULES_LIST = gql`
 // Schedule Mutations
 export const CREATE_SCHEDULE = gql`
   mutation CreateSchedule(
-    $mainUser: String!
+    $mainUser: String
     $subUser: String
     $groom: String!
     $bride: String!

@@ -10,7 +10,6 @@ const ScheduleSchema = new mongoose.Schema(
     mainUser: {
       type: String,
       ref: 'User',
-      required: true,
     },
     subUser: {
       type: String,
@@ -29,7 +28,7 @@ const ScheduleSchema = new mongoose.Schema(
     memo: { type: String },
     status: {
       type: String,
-      enum: ['unassigned', 'assigned', 'completed'],
+      enum: ['unassigned', 'assigned', 'confirmed'],
       default: 'unassigned',
     },
   },

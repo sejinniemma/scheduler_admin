@@ -16,6 +16,11 @@ import {
   CREATE_SCHEDULE,
   UPDATE_SCHEDULE,
 } from '@/src/client/graphql/Schedule';
+import {
+  CREATE_REPORT,
+  DELETE_REPORT,
+  GET_REPORTS_BY_SCHEDULE,
+} from '@/src/client/graphql/Report';
 
 export default function CreateScheduleModal({
   open = false,
@@ -26,6 +31,12 @@ export default function CreateScheduleModal({
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
   const [createSchedule, { loading: creating }] = useMutation(CREATE_SCHEDULE);
   const [updateSchedule, { loading: updating }] = useMutation(UPDATE_SCHEDULE);
+  const [createReport, { loading: confirming }] = useMutation(CREATE_REPORT);
+  const [deleteReport] = useMutation(DELETE_REPORT);
+  const { refetch: refetchReports } = useQuery(GET_REPORTS_BY_SCHEDULE, {
+    variables: { scheduleId: schedule?.id },
+    skip: !schedule?.id || !open,
+  });
 
   const [formData, setFormData] = useState({
     date: '',
@@ -138,10 +149,24 @@ export default function CreateScheduleModal({
         });
       } else {
         // 생성 모드
+        // 메인작가나 서브작가가 있으면 배정완료(assigned), 없으면 미배정(unassigned)
+        const status =
+          formData.mainUser || formData.subUser ? 'assigned' : 'unassigned';
+
+        // mainUser와 subUser가 모두 빈 문자열이면 null로 설정
+        const mainUserValue =
+          formData.mainUser && formData.mainUser.trim() !== ''
+            ? formData.mainUser
+            : null;
+        const subUserValue =
+          formData.subUser && formData.subUser.trim() !== ''
+            ? formData.subUser
+            : null;
+
         await createSchedule({
           variables: {
-            mainUser: formData.mainUser || null,
-            subUser: formData.subUser || null,
+            mainUser: mainUserValue,
+            subUser: subUserValue,
             groom: formData.groom,
             bride: formData.bride,
             date: formData.date,
@@ -149,6 +174,7 @@ export default function CreateScheduleModal({
             venue: formData.venue,
             location: formData.location || null,
             memo: formData.memo || formData.request || null,
+            status: status,
           },
         });
       }
@@ -175,6 +201,169 @@ export default function CreateScheduleModal({
           : isEditMode
           ? '일정 수정 중 오류가 발생했습니다.'
           : '일정 생성 중 오류가 발생했습니다.'
+      );
+    }
+  };
+
+  const handleConfirm = async () => {
+    // 필수 필드 검증
+    if (
+      !formData.date ||
+      !formData.time ||
+      !formData.venue ||
+      !formData.groom ||
+      !formData.bride
+    ) {
+      alert('필수 항목을 모두 입력해주세요.');
+      return;
+    }
+
+    if (!schedule?.id) {
+      alert('수정 모드에서만 확정완료가 가능합니다.');
+      return;
+    }
+
+    // 기존 스케줄의 mainUser/subUser ID 가져오기
+    const mainUserName = schedule.mainUser || '';
+    const subUserName = schedule.subUser || '';
+
+    const existingMainUserId =
+      (mainUserName &&
+        usersData?.users?.find((user) => user?.name === mainUserName)?.id) ||
+      mainUserName ||
+      '';
+    const existingSubUserId =
+      (subUserName &&
+        usersData?.users?.find((user) => user?.name === subUserName)?.id) ||
+      subUserName ||
+      '';
+
+    // 스케줄이 이미 확정(assigned) 상태인지 확인
+    const isAssigned = schedule.status === 'assigned';
+
+    // 작가 변경 여부 확인
+    const mainUserChanged =
+      existingMainUserId && existingMainUserId !== formData.mainUser;
+    const subUserChanged =
+      existingSubUserId && existingSubUserId !== formData.subUser;
+
+    // 변경된 작가가 있고, 스케줄이 이미 assigned 상태인 경우에만 확인 메시지 표시
+    if (isAssigned && (mainUserChanged || subUserChanged)) {
+      const changedUsers = [];
+      if (mainUserChanged) {
+        const existingMainUser = usersData?.users?.find(
+          (user) => user?.id === existingMainUserId
+        );
+        changedUsers.push(
+          `메인 작가: ${existingMainUser?.name || '알 수 없음'}`
+        );
+      }
+      if (subUserChanged) {
+        const existingSubUser = usersData?.users?.find(
+          (user) => user?.id === existingSubUserId
+        );
+        changedUsers.push(
+          `서브 작가: ${existingSubUser?.name || '알 수 없음'}`
+        );
+      }
+
+      const confirmMessage = `이미 ${changedUsers.join(
+        ', '
+      )}가 배정되어있습니다.\n그래도 변경하시겠습니까?`;
+
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+    }
+
+    try {
+      // 기존 Report 조회
+      const { data: reportsResult } = await refetchReports();
+      const existingReports = reportsResult?.reportsBySchedule || [];
+
+      // 변경된 작가의 기존 Report 삭제
+      if (mainUserChanged && existingMainUserId) {
+        const mainReport = existingReports.find(
+          (r) => r.user === existingMainUserId && r.role === 'MAIN'
+        );
+        if (mainReport) {
+          await deleteReport({
+            variables: { id: mainReport.id },
+          });
+        }
+      }
+
+      if (subUserChanged && existingSubUserId) {
+        const subReport = existingReports.find(
+          (r) => r.user === existingSubUserId && r.role === 'SUB'
+        );
+        if (subReport) {
+          await deleteReport({
+            variables: { id: subReport.id },
+          });
+        }
+      }
+
+      // 스케줄 수정 - 확정완료이므로 status를 'confirmed'로 설정
+      await updateSchedule({
+        variables: {
+          id: schedule.id,
+          mainUser: formData.mainUser || null,
+          subUser: formData.subUser || null,
+          groom: formData.groom,
+          bride: formData.bride,
+          date: formData.date,
+          time: formData.time,
+          venue: formData.venue,
+          location: formData.location || null,
+          memo: formData.memo || formData.request || null,
+          status: 'confirmed',
+        },
+      });
+
+      // 스케줄 업데이트 후 잠시 대기하여 DB 반영 보장
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 새로운 mainUser가 있으면 MAIN role로 Report 생성
+      if (formData.mainUser) {
+        await createReport({
+          variables: {
+            scheduleId: schedule.id,
+            status: 'pending',
+            role: 'MAIN',
+          },
+        });
+      }
+
+      // 새로운 subUser가 있으면 SUB role로 Report 생성
+      if (formData.subUser) {
+        await createReport({
+          variables: {
+            scheduleId: schedule.id,
+            status: 'pending',
+            role: 'SUB',
+          },
+        });
+      }
+
+      // 성공 시 폼 초기화 및 모달 닫기
+      setFormData({
+        date: '',
+        time: '',
+        venue: '',
+        location: '',
+        mainUser: '',
+        subUser: '',
+        groom: '',
+        bride: '',
+        memo: '',
+        request: '',
+      });
+      onSuccess();
+    } catch (err) {
+      console.error('확정완료 오류:', err);
+      alert(
+        err instanceof Error ? err.message : '확정완료 중 오류가 발생했습니다.'
       );
     }
   };
@@ -355,18 +544,20 @@ export default function CreateScheduleModal({
 
           {/* Footer */}
           <div className='flex justify-end gap-2 px-6 py-4 border-t border-line-base sticky bottom-0 bg-white'>
-            <button
-              type='button'
-              onClick={handleClose}
-              className='px-4 py-2 rounded-lg cursor-pointer border text-sm hover:bg-gray-50'
-              disabled={creating || updating}
-            >
-              취소
-            </button>
+            {isEditMode && (
+              <button
+                type='button'
+                onClick={handleConfirm}
+                className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                disabled={creating || updating || confirming}
+              >
+                {confirming ? '확정 중...' : '확정완료'}
+              </button>
+            )}
             <button
               type='submit'
               className='px-4 py-2 rounded-lg bg-blue-600 cursor-pointer text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
-              disabled={creating || updating}
+              disabled={creating || updating || confirming}
             >
               {isEditMode
                 ? updating

@@ -30,7 +30,7 @@ export const typeDefs = gql`
 
   type Schedule {
     id: ID!
-    mainUser: String!
+    mainUser: String
     subUser: String!
     groom: String!
     bride: String!
@@ -57,7 +57,7 @@ export const typeDefs = gql`
 
   type Mutation {
     createSchedule(
-      mainUser: String!
+      mainUser: String
       subUser: String
       groom: String!
       bride: String!
@@ -105,9 +105,9 @@ export const resolvers = {
       const filters = {};
       if (date) filters.date = date;
       if (status) filters.status = status;
-      // status가 없으면 assigned 또는 completed 상태만 조회
+      // status가 없으면 assigned 또는 confirmed 상태만 조회
       if (!status) {
-        filters.status = { $in: ['assigned', 'completed'] };
+        filters.status = { $in: ['assigned', 'confirmed'] };
       }
 
       // 파트별 쿼리 생성
@@ -157,7 +157,7 @@ export const resolvers = {
 
           return {
             ...schedule.toObject(),
-            mainUser: mainUserDoc?.name || schedule.mainUser,
+            mainUser: mainUserDoc?.name || schedule.mainUser || '-',
             subUser: subUserDoc?.name || schedule.subUser || '-',
             memo: schedule.memo || null,
             mainUserMemo: mainUserMemo || null,
@@ -180,10 +180,12 @@ export const resolvers = {
       const partUserIds = await getPartUserIds(context.user.adminPart);
 
       // 파트별 스케줄을 최신 생성 순으로 조회
+      // mainUser나 subUser가 파트에 속하거나, unassigned 상태인 스케줄도 포함
       const schedules = await Schedule.find({
         $or: [
           { mainUser: { $in: partUserIds } },
           { subUser: { $in: partUserIds } },
+          { status: 'unassigned' }, // unassigned 상태의 스케줄도 포함
         ],
       }).sort({ createdAt: -1 });
 
@@ -226,7 +228,7 @@ export const resolvers = {
 
           return {
             ...schedule.toObject(),
-            mainUser: mainUserDoc?.name || schedule.mainUser,
+            mainUser: mainUserDoc?.name || schedule.mainUser || '-',
             subUser: subUserDoc?.name || schedule.subUser || '-',
             memo: schedule.memo || null,
             mainUserMemo: mainUserMemo || null,
@@ -284,7 +286,7 @@ export const resolvers = {
         throw new Error('어드민 권한이 필요합니다.');
       }
       await connectToDatabase();
-      console.log('assgined', status);
+
       return Schedule.create({
         mainUser,
         subUser: subUser || '',
@@ -348,7 +350,7 @@ export const resolvers = {
 
       await Schedule.updateMany(
         { id: { $in: validSchedules.map((s) => s.id) } },
-        { $set: { status: 'completed' } }
+        { $set: { status: 'confirmed' } }
       );
 
       return {

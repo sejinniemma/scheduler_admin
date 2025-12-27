@@ -79,3 +79,32 @@ export const CREATE_COMPLETED_REPORT = gql`
   }
 `;
 
+export const CREATE_REPORT = gql`
+  mutation CreateReport($scheduleId: ID!, $status: String!, $role: String) {
+    createReport(scheduleId: $scheduleId, status: $status, role: $role) {
+      id
+      schedule
+      user
+      role
+      status
+      createdAt
+    }
+  }
+`;
+
+export const DELETE_REPORT = gql`
+  mutation DeleteReport($id: ID!) {
+    deleteReport(id: $id)
+  }
+`;
+
+export const GET_REPORTS_BY_SCHEDULE = gql`
+  query GetReportsBySchedule($scheduleId: ID!) {
+    reportsBySchedule(scheduleId: $scheduleId) {
+      id
+      user
+      role
+      status
+    }
+  }
+`;

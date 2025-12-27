@@ -5,7 +5,7 @@ import { useSchedule } from '@/src/contexts/ScheduleContext';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
 import type { Schedule } from '@/src/types/schedule';
 
-type StatusFilter = 'all' | 'unassigned' | 'assigned' | 'completed';
+type StatusFilter = 'all' | 'unassigned' | 'assigned' | 'confirmed';
 
 export default function SchedulesPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
@@ -84,32 +84,11 @@ export default function SchedulesPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'assigned':
-        return '할당됨';
-      case 'completed':
-        return '완료됨';
+        return '배정완료';
+      case 'confirmed':
+        return '확정완료';
       case 'unassigned':
-        return '미할당';
-      default:
-        return status;
-    }
-  };
-
-  const getReportStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '대기';
-      case 'wakeup':
-        return '기상';
-      case 'departure':
-        return '출발';
-      case 'arrival':
-        return '도착';
-      case 'completed':
-        return '완료';
-      case 'delayed':
-        return '지연';
-      case 'canceled':
-        return '취소';
+        return '미배정';
       default:
         return status;
     }
@@ -117,30 +96,12 @@ export default function SchedulesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'confirmed':
         return 'text-green';
-      case 'pending':
-        return 'text-yellow';
-      case 'canceled':
-        return 'text-red';
-      default:
-        return 'text-default';
-    }
-  };
-
-  const getReportStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green';
-      case 'pending':
-      case 'wakeup':
-        return 'text-yellow';
-      case 'departure':
-      case 'arrival':
+      case 'assigned':
         return 'text-blue';
-      case 'delayed':
-      case 'canceled':
-        return 'text-red';
+      case 'unassigned':
+        return 'text-secondary';
       default:
         return 'text-default';
     }
@@ -179,9 +140,9 @@ export default function SchedulesPage() {
 
   const statusTabs: { key: StatusFilter; label: string }[] = [
     { key: 'all', label: '전체' },
-    { key: 'unassigned', label: '미할당' },
-    { key: 'assigned', label: '할당됨' },
-    { key: 'completed', label: '완료됨' },
+    { key: 'unassigned', label: '미배정' },
+    { key: 'assigned', label: '배정완료' },
+    { key: 'confirmed', label: '확정완료' },
   ];
 
   return (
@@ -319,46 +280,21 @@ export default function SchedulesPage() {
                     </td>
                     {/* mainUser */}
                     <td className='p-[16px] text-body4 text-default'>
-                      {schedule.mainUser}
+                      {schedule.mainUser || '-'}
                     </td>
                     {/* subUser */}
                     <td className='p-[16px] text-body4 text-default'>
-                      {schedule.subUser}
+                      {schedule.subUser || '-'}
                     </td>
                     {/* status */}
                     <td className='p-[16px]'>
-                      <div className='flex flex-col gap-[4px] items-center'>
-                        {/* MAIN Report가 있으면 위에 표시 */}
-                        {schedule.mainUserReportStatus && (
-                          <span
-                            className={`text-caption2 font-medium ${getReportStatusColor(
-                              schedule.mainUserReportStatus
-                            )}`}
-                          >
-                            {getReportStatusLabel(
-                              schedule.mainUserReportStatus
-                            )}
-                          </span>
-                        )}
-                        {/* SUB Report가 있으면 아래에, 없으면 Schedule status만 표시 */}
-                        {schedule.subUserReportStatus ? (
-                          <span
-                            className={`text-caption1 font-medium ${getReportStatusColor(
-                              schedule.subUserReportStatus
-                            )}`}
-                          >
-                            {getReportStatusLabel(schedule.subUserReportStatus)}
-                          </span>
-                        ) : (
-                          <span
-                            className={`text-caption1 font-medium ${getStatusColor(
-                              schedule.status
-                            )}`}
-                          >
-                            {getStatusLabel(schedule.status)}
-                          </span>
-                        )}
-                      </div>
+                      <span
+                        className={`text-caption1 font-medium ${getStatusColor(
+                          schedule.status
+                        )}`}
+                      >
+                        {getStatusLabel(schedule.status)}
+                      </span>
                     </td>
                     {/* 상세 - 수정 버튼 */}
                     <td className='p-[16px]'>
