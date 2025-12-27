@@ -138,7 +138,6 @@ export default function CreateScheduleModal({
         });
       } else {
         // 생성 모드
-
         await createSchedule({
           variables: {
             mainUser: formData.mainUser || null,
