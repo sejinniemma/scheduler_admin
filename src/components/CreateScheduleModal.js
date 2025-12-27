@@ -138,8 +138,6 @@ export default function CreateScheduleModal({
         });
       } else {
         // 생성 모드
-        // 메인 작가가 없으면 미배정 상태로
-        const status = formData.mainUser ? 'assigned' : 'unassigned';
 
         await createSchedule({
           variables: {
@@ -152,7 +150,6 @@ export default function CreateScheduleModal({
             venue: formData.venue,
             location: formData.location || null,
             memo: formData.memo || formData.request || null,
-            status: status,
           },
         });
       }

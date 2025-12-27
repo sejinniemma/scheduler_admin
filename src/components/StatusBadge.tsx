@@ -32,7 +32,7 @@ const getStatusLabel = (status: string): string => {
     case 'canceled':
       return '취소';
     default:
-      return status;
+      return '대기';
   }
 };
 
@@ -71,4 +71,3 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     </span>
   );
 }
-

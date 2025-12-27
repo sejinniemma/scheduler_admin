@@ -187,7 +187,7 @@ export default function SchedulesPage() {
                 {sortedSchedules.map((schedule, index) => (
                   <tr
                     key={schedule.id}
-                    className='border-b border-line-edge hover:bg-lighter transition-colors'
+                    className='border-b border-line-edge cursor-pointer hover:bg-lighter transition-colors'
                   >
                     {/* 번호 */}
                     <td className='p-[16px] text-body4 text-normal font-medium'>
@@ -257,7 +257,7 @@ export default function SchedulesPage() {
                     <td className='p-[16px]'>
                       <button
                         onClick={() => handleEdit(schedule)}
-                        className='px-[12px] py-[6px] bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+                        className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
                       >
                         수정
                       </button>

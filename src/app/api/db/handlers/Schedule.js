@@ -1,6 +1,7 @@
 import Schedule from '../models/Schedule';
 import User from '../models/User';
 import Report from '../models/Report';
+import { connectToDatabase } from '../mongodb';
 import { gql } from '@apollo/client';
 
 // 파트별 유저 ID 목록 가져오기 (헬퍼 함수)
@@ -175,46 +176,16 @@ export const resolvers = {
         throw new Error('어드민 권한이 필요합니다.');
       }
 
-      // 오늘 날짜 가져오기 (YYYY-MM-DD 형식)
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const day = now.getDate();
-      const today = `${year}-${String(month + 1).padStart(2, '0')}-${String(
-        day
-      ).padStart(2, '0')}`;
-
-      // 이번달의 시작일과 종료일 가져오기
-      const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-      const endDate = new Date(year, month + 1, 0);
-      const endDateStr = `${year}-${String(month + 1).padStart(
-        2,
-        '0'
-      )}-${String(endDate.getDate()).padStart(2, '0')}`;
-
       // 파트별 유저 ID 목록 가져오기
       const partUserIds = await getPartUserIds(context.user.adminPart);
 
-      // 이번달 범위 내에서:
+      // 파트별 스케줄을 최신 생성 순으로 조회
       const schedules = await Schedule.find({
-        $and: [
-          {
-            $or: [
-              { mainUser: { $in: partUserIds } },
-              { subUser: { $in: partUserIds } },
-            ],
-          },
-          {
-            date: { $gte: startDate, $lte: endDateStr }, // 이번달 범위
-          },
-          {
-            $or: [
-              { date: today, status: 'unassigned' }, // 오늘 날짜는 아직 시작이 안된 것만
-              { date: { $gt: today } }, // 오늘 이후는 모두
-            ],
-          },
+        $or: [
+          { mainUser: { $in: partUserIds } },
+          { subUser: { $in: partUserIds } },
         ],
-      }).sort({ date: 1, time: 1 });
+      }).sort({ createdAt: -1 });
 
       // 각 스케줄에 대한 User 이름 및 Report memo 가져오기
       const schedulesWithUserNames = await Promise.all(
@@ -312,7 +283,8 @@ export const resolvers = {
       if (!context.user?.adminPart) {
         throw new Error('어드민 권한이 필요합니다.');
       }
-
+      await connectToDatabase();
+      console.log('assgined', status);
       return Schedule.create({
         mainUser,
         subUser: subUser || '',

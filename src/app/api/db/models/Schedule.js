@@ -43,7 +43,9 @@ ScheduleSchema.pre('save', function (next) {
     const dateTimeString = `${this.date}T${this.time}:00`;
     this.scheduledAt = new Date(dateTimeString);
   }
-  next();
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 delete mongoose.models.Schedule; // ✅ 기존 모델 제거

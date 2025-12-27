@@ -106,7 +106,6 @@ export const UPDATE_SCHEDULE = gql`
     $venue: String
     $memo: String
     $status: String
-    $currentStep: Int
   ) {
     updateSchedule(
       id: $id
@@ -120,7 +119,6 @@ export const UPDATE_SCHEDULE = gql`
       venue: $venue
       memo: $memo
       status: $status
-      currentStep: $currentStep
     ) {
       id
       mainUser
@@ -134,7 +132,6 @@ export const UPDATE_SCHEDULE = gql`
       venue
       memo
       status
-      currentStep
     }
   }
 `;
