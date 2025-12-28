@@ -15,6 +15,7 @@ import { GET_USERS } from '@/src/client/graphql/User';
 import {
   CREATE_SCHEDULE,
   UPDATE_SCHEDULE,
+  DELETE_SCHEDULE,
 } from '@/src/client/graphql/Schedule';
 import {
   CREATE_REPORT,
@@ -31,6 +32,7 @@ export default function CreateScheduleModal({
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
   const [createSchedule, { loading: creating }] = useMutation(CREATE_SCHEDULE);
   const [updateSchedule, { loading: updating }] = useMutation(UPDATE_SCHEDULE);
+  const [deleteSchedule, { loading: deleting }] = useMutation(DELETE_SCHEDULE);
   const [createReport, { loading: confirming }] = useMutation(CREATE_REPORT);
   const [deleteReport] = useMutation(DELETE_REPORT);
   const { refetch: refetchReports } = useQuery(GET_REPORTS_BY_SCHEDULE, {
@@ -368,6 +370,52 @@ export default function CreateScheduleModal({
     }
   };
 
+  const handleDelete = async () => {
+    if (!schedule?.id) {
+      alert('수정 모드에서만 삭제가 가능합니다.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `정말로 이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // 확정완료 상태인 경우 관련 Report들도 삭제
+      if (schedule.status === 'confirmed') {
+        // 관련 Report 조회
+        const { data: reportsResult } = await refetchReports();
+        const existingReports = reportsResult?.reportsBySchedule || [];
+        console.log('existingReports', existingReports);
+        // 모든 Report 삭제
+        for (const report of existingReports) {
+          try {
+            await deleteReport({
+              variables: { id: report.id },
+            });
+          } catch (err) {
+            console.error(`Report 삭제 오류 (ID: ${report.id}):`, err);
+          }
+        }
+      }
+
+      // 스케줄 삭제
+      await deleteSchedule({
+        variables: { id: schedule.id },
+        refetchQueries: ['GetSchedules', 'GetSchedulesList'],
+      });
+
+      onSuccess();
+    } catch (err) {
+      console.error('일정 삭제 오류:', err);
+      alert(
+        err instanceof Error ? err.message : '일정 삭제 중 오류가 발생했습니다.'
+      );
+    }
+  };
+
   const handleClose = () => {
     setFormData({
       date: '',
@@ -545,19 +593,29 @@ export default function CreateScheduleModal({
           {/* Footer */}
           <div className='flex justify-end gap-2 px-6 py-4 border-t border-line-base sticky bottom-0 bg-white'>
             {isEditMode && (
-              <button
-                type='button'
-                onClick={handleConfirm}
-                className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
-                disabled={creating || updating || confirming}
-              >
-                {confirming ? '확정 중...' : '확정완료'}
-              </button>
+              <>
+                <button
+                  type='button'
+                  onClick={handleDelete}
+                  className='px-4 py-2 rounded-lg bg-red-600 cursor-pointer text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  disabled={creating || updating || confirming || deleting}
+                >
+                  {deleting ? '삭제 중...' : '삭제'}
+                </button>
+                <button
+                  type='button'
+                  onClick={handleConfirm}
+                  className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  disabled={creating || updating || confirming || deleting}
+                >
+                  {confirming ? '확정 중...' : '확정완료'}
+                </button>
+              </>
             )}
             <button
               type='submit'
               className='px-4 py-2 rounded-lg bg-blue-600 cursor-pointer text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
-              disabled={creating || updating || confirming}
+              disabled={creating || updating || confirming || deleting}
             >
               {isEditMode
                 ? updating

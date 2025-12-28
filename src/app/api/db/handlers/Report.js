@@ -229,15 +229,11 @@ export const resolvers = {
         throw new Error('인증이 필요합니다.');
       }
       await connectToDatabase();
-      const report = await Report.findOne({ id });
+      const report = await Report.findOneAndDelete({ id });
       if (!report) {
         return false;
       }
-      // 본인의 보고인지 확인
-      if (report.user.toString() === context.user.id) {
-        await Report.findOneAndDelete({ id });
-        return true;
-      }
+
       return false;
     },
   },

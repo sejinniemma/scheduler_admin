@@ -311,15 +311,6 @@ export const resolvers = {
         throw new Error('스케줄을 찾을 수 없습니다.');
       }
 
-      // 파트별 권한 확인
-      const partUserIds = await getPartUserIds(context.user.adminPart);
-      if (
-        !partUserIds.includes(schedule.mainUser) &&
-        !partUserIds.includes(schedule.subUser)
-      ) {
-        throw new Error('권한이 없습니다.');
-      }
-
       Object.assign(schedule, updates);
       return schedule.save();
     },
