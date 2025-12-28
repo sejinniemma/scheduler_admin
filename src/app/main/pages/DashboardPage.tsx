@@ -86,7 +86,7 @@ export default function DashboardPage() {
     { key: 'arrival', label: '도착' },
     { key: 'completed', label: '완료' },
     { key: 'delayed', label: '지연' },
-    { key: 'canceled', label: '취소' },
+    // { key: 'canceled', label: '취소' },
   ];
 
   return (
@@ -114,7 +114,9 @@ export default function DashboardPage() {
 
       {sortedSchedules.length === 0 ? (
         <div className='flex items-center justify-center h-[400px]'>
-          <p className='text-body2 text-default'>등록된 스케줄이 없습니다.</p>
+          <p className='text-body2 text-default'>
+            오늘 등록된 스케줄이 없습니다.
+          </p>
         </div>
       ) : (
         <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>

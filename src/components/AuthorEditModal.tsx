@@ -274,7 +274,7 @@ export default function AuthorEditModal({
             <button
               type='button'
               onClick={handleDelete}
-              className='flex-1 rounded-xl border cursor-pointer py-2 text-sm hover:bg-gray-50 text-red-600 border-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='flex-1 rounded-xl border cursor-pointer py-2 text-sm bg-[#D22C2C] text-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed'
               disabled={updating || deleting}
             >
               {deleting ? '삭제 중...' : '삭제하기'}

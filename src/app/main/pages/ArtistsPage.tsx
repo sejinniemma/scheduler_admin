@@ -122,9 +122,9 @@ export default function ArtistsPage() {
 
   return (
     <div className='p-[40px]'>
-      <h1 className='text-body4 text-normal font-semibold mb-[40px]'>
+      {/* <h1 className='text-body4 text-normal font-semibold mb-[40px]'>
         작가관리
-      </h1>
+      </h1> */}
       {/* 작가추가 */}
       <div className='flex justify-end mb-[20px]'>
         <button
