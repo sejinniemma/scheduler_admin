@@ -83,6 +83,11 @@ export default function ArtistsPage() {
     return `${year}-${month}-${day}`;
   };
 
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className='p-[40px]'>
@@ -166,17 +171,14 @@ export default function ArtistsPage() {
                   <th className='p-[16px]'>시작일</th>
                   <th className='p-[16px]'>상태</th>
                   <th className='p-[16px]'>메모</th>
+                  <th className='p-[16px]'>상세</th>
                 </tr>
               </thead>
               <tbody className='text-center'>
                 {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setIsEditModalOpen(true);
-                    }}
-                    className='border-b cursor-pointer border-line-edge hover:bg-lighter transition-colors'
+                    className='border-b border-line-edge hover:bg-lighter transition-colors'
                   >
                     {/* 번호 */}
                     <td className='p-[16px] text-body4 text-normal font-medium'>
@@ -217,6 +219,18 @@ export default function ArtistsPage() {
                     {/* 메모 */}
                     <td className='p-[16px] text-body4 text-default max-w-[200px] truncate'>
                       {user.memo || '-'}
+                    </td>
+                    {/* 상세 - 수정 버튼 */}
+                    <td className='p-[16px]'>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(user);
+                        }}
+                        className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+                      >
+                        수정
+                      </button>
                     </td>
                   </tr>
                 ))}
