@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { GET_USERS } from '@/src/client/graphql/User';
 import AuthorAddModal from '@/src/components/AuthorAddModal';
+import AuthorEditModal from '@/src/components/AuthorEditModal';
 
 interface User {
   id: string;
@@ -37,6 +38,8 @@ export default function ArtistsPage() {
   } = useQuery<GetUsersData>(GET_USERS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const users: User[] = data?.users || [];
   const error = queryError
@@ -169,7 +172,11 @@ export default function ArtistsPage() {
                 {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className='border-b border-line-edge hover:bg-lighter transition-colors'
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setIsEditModalOpen(true);
+                    }}
+                    className='border-b cursor-pointer border-line-edge hover:bg-lighter transition-colors'
                   >
                     {/* 번호 */}
                     <td className='p-[16px] text-body4 text-normal font-medium'>
@@ -228,6 +235,24 @@ export default function ArtistsPage() {
           refetch();
         }}
       />
+
+      {/* 작가 수정 모달 */}
+      {selectedUser && (
+        <AuthorEditModal
+          key={selectedUser.id} // user가 변경될 때 컴포넌트 재마운트
+          open={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+            refetch();
+          }}
+          user={selectedUser}
+        />
+      )}
     </div>
   );
 }

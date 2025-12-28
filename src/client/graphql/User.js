@@ -80,11 +80,46 @@ export const CREATE_USER = gql`
 `;
 
 export const UPDATE_USER = gql`
-  mutation UpdateUser($id: ID!, $name: String, $phone: String) {
-    updateUser(id: $id, name: $name, phone: $phone) {
+  mutation UpdateUser(
+    $id: ID!
+    $name: String
+    $phone: String
+    $address: String
+    $mainLocation: String
+    $hasVehicle: Boolean
+    $startDate: DateTime
+    $birthDate: DateTime
+    $gender: String
+    $status: String
+    $memo: String
+  ) {
+    updateUser(
+      id: $id
+      name: $name
+      phone: $phone
+      address: $address
+      mainLocation: $mainLocation
+      hasVehicle: $hasVehicle
+      startDate: $startDate
+      birthDate: $birthDate
+      gender: $gender
+      status: $status
+      memo: $memo
+    ) {
       id
       name
       phone
+      gender
+      role
+      address
+      mainLocation
+      hasVehicle
+      startDate
+      birthDate
+      status
+      memo
+      createdAt
+      updatedAt
     }
   }
 `;

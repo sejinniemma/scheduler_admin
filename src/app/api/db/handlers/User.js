@@ -50,6 +50,7 @@ export const typeDefs = gql`
       mainLocation: String
       hasVehicle: Boolean
       startDate: DateTime
+      birthDate: DateTime
       gender: String
       status: String
       memo: String
@@ -146,10 +147,11 @@ export const resolvers = {
       if (!user) {
         throw new Error('사용자를 찾을 수 없습니다.');
       }
-      // 본인 또는 관리자만 수정 가능
-      if (user.id !== context.user.id && context.user.role !== 'ADMIN') {
+      // 관리자만 수정 가능
+      if (!context.user.adminPart) {
         throw new Error('권한이 없습니다.');
       }
+
       if (name) user.name = name;
       if (phone) user.phone = phone;
       if (address) user.address = address;
