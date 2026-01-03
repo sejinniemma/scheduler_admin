@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
   X,
@@ -11,6 +11,7 @@ import {
   FileText,
   StickyNote,
 } from 'lucide-react';
+import DatePicker from './DatePicker';
 import { GET_USERS } from '@/src/client/graphql/User';
 import {
   CREATE_SCHEDULE,
@@ -53,11 +54,39 @@ export default function CreateScheduleModal({
     request: '',
   });
 
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const calendarRef = useRef(null);
+
   const isEditMode = !!schedule;
+
+  // 외부 클릭 시 달력 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target) &&
+        showCalendar
+      ) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   // 수정 모드일 때 스케줄 데이터로 폼 초기화
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setShowCalendar(false);
+      return;
+    }
 
     if (schedule && typeof schedule === 'object') {
       // mainUser와 subUser는 이름일 수 있으므로 ID로 변환
@@ -479,13 +508,57 @@ export default function CreateScheduleModal({
 
             {/* 날짜 */}
             <Field label='날짜' required icon={<Calendar size={16} />}>
-              <input
-                type='date'
-                className='input'
-                value={formData.date}
-                onChange={(e) => handleChange('date', e.target.value)}
-                required
-              />
+              <div className='relative'>
+                <input
+                  type='text'
+                  className='input cursor-pointer'
+                  value={
+                    formData.date
+                      ? (() => {
+                          const date = new Date(formData.date);
+                          const year = date.getFullYear();
+                          const month = date.getMonth() + 1;
+                          const day = date.getDate();
+                          const dayNames = [
+                            '일',
+                            '월',
+                            '화',
+                            '수',
+                            '목',
+                            '금',
+                            '토',
+                          ];
+                          const dayName = dayNames[date.getDay()];
+                          return `${year}년 ${month}월 ${day}일 (${dayName})`;
+                        })()
+                      : ''
+                  }
+                  placeholder='날짜를 선택하세요'
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  readOnly
+                  required
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors'
+                >
+                  <Calendar size={18} />
+                </button>
+                {showCalendar && (
+                  <div ref={calendarRef}>
+                    <DatePicker
+                      selectedDate={formData.date}
+                      onSelectDate={(date) => {
+                        handleChange('date', date);
+                        setShowCalendar(false);
+                      }}
+                      currentDate={calendarDate}
+                      onDateChange={setCalendarDate}
+                    />
+                  </div>
+                )}
+              </div>
               <p className='hint'>
                 예식은 주말(토요일, 일요일)에만 진행됩니다.
               </p>
@@ -500,7 +573,6 @@ export default function CreateScheduleModal({
                 onChange={(e) => handleChange('time', e.target.value)}
                 required
               />
-              <p className='hint'>형식: HH:MM</p>
             </Field>
 
             {/* 웨딩홀 */}
