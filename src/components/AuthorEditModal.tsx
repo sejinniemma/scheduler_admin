@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { X, User, Phone, MapPin, Calendar } from 'lucide-react';
 import { UPDATE_USER, DELETE_USER } from '@/src/client/graphql/User';
+import DatePicker from './DatePicker';
 
 interface UserData {
   id: string;
@@ -34,6 +35,31 @@ export default function AuthorEditModal({
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER);
   const [deleteUser, { loading: deleting }] = useMutation(DELETE_USER);
 
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  // 외부 클릭 시 달력 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        showCalendar
+      ) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
   // 날짜 형식 변환 (ISO -> YYYY-MM-DD)
   const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return '';
@@ -59,18 +85,35 @@ export default function AuthorEditModal({
         memo: '',
       };
     }
+    const startDate = formatDateForInput(user.startDate);
     return {
       name: user.name || '',
       phone: user.phone || '',
       gender: user.gender || '',
       address: user.address || '',
       mainLocation: user.mainLocation || '',
-      startDate: formatDateForInput(user.startDate),
+      startDate: startDate,
       hasVehicle: user.hasVehicle || false,
       status: user.status || '',
       memo: user.memo || '',
     };
   }, [user]);
+
+  // user가 변경될 때 calendarDate 초기화
+  useEffect(() => {
+    if (user?.startDate) {
+      const startDate = formatDateForInput(user.startDate);
+      if (startDate) {
+        const newDate = new Date(startDate);
+        if (newDate.getTime() !== calendarDate.getTime()) {
+          setCalendarDate(newDate);
+        }
+      }
+    } else {
+      setCalendarDate(new Date());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // key prop으로 컴포넌트가 재마운트되므로 initialFormData가 자동으로 사용됨
   const [formData, setFormData] = useState(initialFormData);
@@ -148,6 +191,7 @@ export default function AuthorEditModal({
   };
 
   const handleClose = () => {
+    setShowCalendar(false);
     onClose();
   };
 
@@ -204,14 +248,58 @@ export default function AuthorEditModal({
               />
             </Field>
 
-            <Field label='시작일' required icon={<Calendar size={16} />}>
-              <input
-                type='date'
-                className='input'
-                value={formData.startDate}
-                onChange={(e) => handleChange('startDate', e.target.value)}
-                required
-              />
+            <Field label='시작일' required>
+              <div className='relative'>
+                <input
+                  type='text'
+                  className='input cursor-pointer pr-10'
+                  value={
+                    formData.startDate
+                      ? (() => {
+                          const date = new Date(formData.startDate);
+                          const year = date.getFullYear();
+                          const month = date.getMonth() + 1;
+                          const day = date.getDate();
+                          const dayNames = [
+                            '일',
+                            '월',
+                            '화',
+                            '수',
+                            '목',
+                            '금',
+                            '토',
+                          ];
+                          const dayName = dayNames[date.getDay()];
+                          return `${year}년 ${month}월 ${day}일 (${dayName})`;
+                        })()
+                      : ''
+                  }
+                  placeholder='날짜를 선택하세요'
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  readOnly
+                  required
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors'
+                >
+                  <Calendar size={16} />
+                </button>
+                {showCalendar && (
+                  <div ref={calendarRef}>
+                    <DatePicker
+                      selectedDate={formData.startDate}
+                      onSelectDate={(date: string) => {
+                        handleChange('startDate', date);
+                        setShowCalendar(false);
+                      }}
+                      currentDate={calendarDate}
+                      onDateChange={setCalendarDate}
+                    />
+                  </div>
+                )}
+              </div>
             </Field>
 
             <Field label='거주지' icon={<MapPin size={16} />}>
