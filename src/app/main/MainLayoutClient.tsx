@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import DashboardPage from './pages/DashboardPage';
 import SchedulesPage from './pages/SchedulesPage';
+import HistoryPage from './pages/HistoryPage';
 import ArtistsPage from './pages/ArtistsPage';
 import { ScheduleProvider } from '@/src/contexts/ScheduleContext';
 import { ApolloClientProvider } from '@/src/client/ApolloClientProvider';
 import Sidebar from '../../components/Sidebar';
 
-type MenuType = 'dashboard' | 'schedules' | 'artists';
+type MenuType = 'dashboard' | 'schedules' | 'artists' | 'history';
 
 interface MainLayoutClientProps {
   userName: string;
@@ -39,6 +40,13 @@ export default function MainLayoutClient({ userName }: MainLayoutClientProps) {
           <div className={currentMenu === 'schedules' ? 'block' : 'hidden'}>
             <ScheduleProvider endpoint='list'>
               <SchedulesPage />
+            </ScheduleProvider>
+          </div>
+
+          {/* History Page */}
+          <div className={currentMenu === 'history' ? 'block' : 'hidden'}>
+            <ScheduleProvider endpoint='history'>
+              <HistoryPage />
             </ScheduleProvider>
           </div>
 

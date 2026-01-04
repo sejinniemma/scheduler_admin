@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Button from '@/src/components/Button';
 import { signOut } from 'next-auth/react';
 
-type MenuType = 'dashboard' | 'schedules' | 'artists';
+type MenuType = 'dashboard' | 'schedules' | 'artists' | 'history';
 
 interface SidebarProps {
   userName: string;
@@ -26,6 +26,11 @@ export default function Sidebar({
     {
       key: 'schedules',
       label: '일정관리',
+      icon: 'schedules.svg',
+    },
+    {
+      key: 'history',
+      label: '히스토리',
       icon: 'schedules.svg',
     },
     { key: 'artists', label: '작가관리', icon: '/artists.svg' },
@@ -81,4 +86,3 @@ export default function Sidebar({
     </aside>
   );
 }
-

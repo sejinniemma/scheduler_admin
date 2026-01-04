@@ -53,6 +53,7 @@ export const typeDefs = gql`
   type Query {
     schedules(date: String, status: String): [Schedule!]!
     schedulesList: [Schedule!]!
+    schedulesHistory: [Schedule!]!
     schedule(id: ID!): Schedule
   }
 
@@ -179,16 +180,29 @@ export const resolvers = {
         throw new Error('어드민 권한이 필요합니다.');
       }
 
-      // 파트별 유저 ID 목록 가져오기
+      // 오늘 날짜 계산 (YYYY-MM-DD 형식)
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayDateString = `${year}-${month}-${day}`;
+
+      // 파트별 유저 ID 목록 가져오기 : 아이폰스냅,포토그래퍼등 해당 파트에 속한 유저들만 조회
       const partUserIds = await getPartUserIds(context.user.adminPart);
 
       // 파트별 스케줄을 최신 생성 순으로 조회
-      // mainUser나 subUser가 파트에 속하거나, unassigned 상태인 스케줄도 포함
+      // mainUser나 subUser가 파트에 속한 스케줄 (모든 status) 또는 미배정(unassigned) 상태인 스케줄
+      // 오늘 날짜 이상의 스케줄만 조회
       const schedules = await Schedule.find({
-        $or: [
-          { mainUser: { $in: partUserIds } },
-          { subUser: { $in: partUserIds } },
-          { status: 'unassigned' }, // unassigned 상태의 스케줄도 포함
+        $and: [
+          {
+            $or: [
+              { mainUser: { $in: partUserIds } },
+              { subUser: { $in: partUserIds } },
+              { status: 'unassigned' }, // 미배정 상태의 스케줄도 포함 (메인유저와 서브유저가 없기)
+            ],
+          },
+          { date: { $gte: todayDateString } }, // 오늘 날짜 이상
         ],
       }).sort({ createdAt: -1 });
 
@@ -202,6 +216,87 @@ export const resolvers = {
 
           // Schedule에 연결된 Report의 memo 및 status 가져오기
           // mainUser와 subUser의 Report memo와 status를 각각 찾음
+          const reports = await Report.find({ scheduleId: schedule.id });
+
+          let mainUserMemo = null;
+          let subUserMemo = null;
+          let mainUserReportStatus = null;
+          let subUserReportStatus = null;
+
+          if (reports.length > 0) {
+            // MAIN role을 가진 Report 찾기
+            const mainReport = reports.find((r) => r.role === 'MAIN');
+            if (mainReport) {
+              mainUserReportStatus = mainReport.status;
+              if (mainReport.memo) {
+                mainUserMemo = mainReport.memo;
+              }
+            }
+
+            // SUB role을 가진 Report 찾기
+            const subReport = reports.find((r) => r.role === 'SUB');
+            if (subReport) {
+              subUserReportStatus = subReport.status;
+              if (subReport.memo) {
+                subUserMemo = subReport.memo;
+              }
+            }
+          }
+
+          return {
+            ...schedule.toObject(),
+            mainUser: mainUserDoc?.name || schedule.mainUser || '-',
+            subUser: subUserDoc?.name || schedule.subUser || '-',
+            memo: schedule.memo || null,
+            mainUserMemo: mainUserMemo || null,
+            subUserMemo: subUserMemo || null,
+            mainUserReportStatus: mainUserReportStatus || null,
+            subUserReportStatus: subUserReportStatus || null,
+          };
+        })
+      );
+
+      return schedulesWithUserNames;
+    },
+
+    schedulesHistory: async (parent, args, context) => {
+      if (!context.user?.adminPart) {
+        throw new Error('어드민 권한이 필요합니다.');
+      }
+
+      // 오늘 날짜 계산 (YYYY-MM-DD 형식)
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayDateString = `${year}-${month}-${day}`;
+
+      // 파트별 유저 ID 목록 가져오기
+      const partUserIds = await getPartUserIds(context.user.adminPart);
+
+      // 오늘 이전의 스케줄만 조회
+      const schedules = await Schedule.find({
+        $and: [
+          {
+            $or: [
+              { mainUser: { $in: partUserIds } },
+              { subUser: { $in: partUserIds } },
+              { status: 'unassigned' },
+            ],
+          },
+          { date: { $lt: todayDateString } }, // 오늘 날짜 이전
+        ],
+      }).sort({ createdAt: -1 });
+
+      // 각 스케줄에 대한 User 이름 및 Report memo 가져오기
+      const schedulesWithUserNames = await Promise.all(
+        schedules.map(async (schedule) => {
+          const mainUserDoc = await User.findOne({ id: schedule.mainUser });
+          const subUserDoc = schedule.subUser
+            ? await User.findOne({ id: schedule.subUser })
+            : null;
+
+          // Schedule에 연결된 Report의 memo 및 status 가져오기
           const reports = await Report.find({ scheduleId: schedule.id });
 
           let mainUserMemo = null;

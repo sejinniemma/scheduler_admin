@@ -5,11 +5,12 @@ import { useQuery } from '@apollo/client/react';
 import {
   GET_SCHEDULES,
   GET_SCHEDULES_LIST,
+  GET_SCHEDULES_HISTORY,
 } from '@/src/client/graphql/Schedule';
 import { getToday } from '@/src/lib/utiles';
 import type { Schedule } from '@/src/types/schedule';
 
-type ScheduleEndpoint = 'today' | 'list';
+type ScheduleEndpoint = 'today' | 'list' | 'history';
 
 interface ScheduleContextType {
   schedules: Schedule[];
@@ -36,14 +37,22 @@ export function ScheduleProvider({
 }: ScheduleProviderProps) {
   // today 엔드포인트: 오늘 날짜, status: 'assigned'
   // list 엔드포인트: schedulesList 쿼리 사용
+  // history 엔드포인트: schedulesHistory 쿼리 사용 (오늘 이전 스케줄)
   const todayDate = useMemo(() => getToday(), []);
   console.log('endpoint', endpoint);
+
+  const getQuery = () => {
+    if (endpoint === 'today') return GET_SCHEDULES;
+    if (endpoint === 'history') return GET_SCHEDULES_HISTORY;
+    return GET_SCHEDULES_LIST;
+  };
+
   const {
     data,
     loading,
     error,
     refetch: refetchQuery,
-  } = useQuery(endpoint === 'today' ? GET_SCHEDULES : GET_SCHEDULES_LIST, {
+  } = useQuery(getQuery(), {
     variables:
       endpoint === 'today'
         ? {
@@ -60,6 +69,10 @@ export function ScheduleProvider({
     if (data) {
       if (endpoint === 'today') {
         return (data as { schedules?: Schedule[] }).schedules || [];
+      } else if (endpoint === 'history') {
+        return (
+          (data as { schedulesHistory?: Schedule[] }).schedulesHistory || []
+        );
       } else {
         return (data as { schedulesList?: Schedule[] }).schedulesList || [];
       }

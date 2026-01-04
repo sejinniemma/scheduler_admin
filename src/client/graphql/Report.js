@@ -92,6 +92,20 @@ export const CREATE_REPORT = gql`
   }
 `;
 
+export const UPDATE_REPORT = gql`
+  mutation UpdateReport($id: ID!, $status: String!) {
+    updateReport(id: $id, status: $status) {
+      id
+      schedule
+      user
+      role
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const DELETE_REPORT = gql`
   mutation DeleteReport($id: ID!) {
     deleteReport(id: $id)

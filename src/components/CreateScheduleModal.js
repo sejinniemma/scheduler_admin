@@ -573,7 +573,7 @@ export default function CreateScheduleModal({
             </Field>
 
             {/* 시간 */}
-            <Field label='시간' required icon={<Clock size={16} />}>
+            <Field label='예식 시간' required icon={<Clock size={16} />}>
               <input
                 type='time'
                 className='input'
@@ -584,7 +584,7 @@ export default function CreateScheduleModal({
             </Field>
 
             {/* 작가 도착 시간 */}
-            <Field label='작가 도착 시간' icon={<Clock size={16} />}>
+            <Field label='작가 도착 시간' required icon={<Clock size={16} />}>
               <input
                 type='time'
                 className='input'
