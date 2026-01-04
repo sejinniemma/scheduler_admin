@@ -44,6 +44,7 @@ export default function CreateScheduleModal({
   const [formData, setFormData] = useState({
     date: '',
     time: '',
+    userArrivalTime: '',
     venue: '',
     location: '',
     mainUser: '',
@@ -107,6 +108,7 @@ export default function CreateScheduleModal({
       setFormData({
         date: schedule.date || '',
         time: schedule.time || '',
+        userArrivalTime: schedule.userArrivalTime || '',
         venue: schedule.venue || '',
         location: schedule.location || '',
         mainUser: mainUserId,
@@ -121,6 +123,7 @@ export default function CreateScheduleModal({
       setFormData({
         date: '',
         time: '',
+        userArrivalTime: '',
         venue: '',
         location: '',
         mainUser: '',
@@ -172,6 +175,7 @@ export default function CreateScheduleModal({
             bride: formData.bride,
             date: formData.date,
             time: formData.time,
+            userArrivalTime: formData.userArrivalTime || null,
             venue: formData.venue,
             location: formData.location || null,
             memo: formData.memo || formData.request || null,
@@ -202,6 +206,7 @@ export default function CreateScheduleModal({
             bride: formData.bride,
             date: formData.date,
             time: formData.time,
+            userArrivalTime: formData.userArrivalTime || null,
             venue: formData.venue,
             location: formData.location || null,
             memo: formData.memo || formData.request || null,
@@ -345,6 +350,7 @@ export default function CreateScheduleModal({
           bride: formData.bride,
           date: formData.date,
           time: formData.time,
+          userArrivalTime: formData.userArrivalTime || null,
           venue: formData.venue,
           location: formData.location || null,
           memo: formData.memo || formData.request || null,
@@ -381,6 +387,7 @@ export default function CreateScheduleModal({
       setFormData({
         date: '',
         time: '',
+        userArrivalTime: '',
         venue: '',
         location: '',
         mainUser: '',
@@ -449,6 +456,7 @@ export default function CreateScheduleModal({
     setFormData({
       date: '',
       time: '',
+      userArrivalTime: '',
       venue: '',
       location: '',
       mainUser: '',
@@ -572,6 +580,19 @@ export default function CreateScheduleModal({
                 value={formData.time}
                 onChange={(e) => handleChange('time', e.target.value)}
                 required
+              />
+            </Field>
+
+            {/* 작가 도착 시간 */}
+            <Field label='작가 도착 시간' icon={<Clock size={16} />}>
+              <input
+                type='time'
+                className='input'
+                value={formData.userArrivalTime}
+                onChange={(e) =>
+                  handleChange('userArrivalTime', e.target.value)
+                }
+                placeholder='예: 10:30'
               />
             </Field>
 

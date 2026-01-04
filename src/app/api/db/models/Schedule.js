@@ -23,6 +23,7 @@ const ScheduleSchema = new mongoose.Schema(
       required: true,
     },
     scheduledAt: { type: Date }, // 로직/쿼리용: Date 객체
+    userArrivalTime: { type: String }, // 작가 도착 시간 (예: "10:30")
     location: { type: String }, // 실 주소 (예: "노원구 섬밭로 258 건영옴니백화점")
     venue: { type: String }, // 장소명 (예: "노원 비엔티 컨벤션 6층 단독홀")
     memo: { type: String },

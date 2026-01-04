@@ -5,6 +5,7 @@ export interface Schedule {
   groom: string;
   bride: string;
   time: string;
+  userArrivalTime?: string;
   location?: string;
   venue?: string;
   date: string;

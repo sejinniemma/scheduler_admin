@@ -37,6 +37,7 @@ export const typeDefs = gql`
     date: String!
     time: String!
     scheduledAt: DateTime
+    userArrivalTime: String
     location: String
     venue: String
     memo: String
@@ -63,6 +64,7 @@ export const typeDefs = gql`
       bride: String!
       date: String!
       time: String!
+      userArrivalTime: String
       location: String
       venue: String
       memo: String
@@ -77,6 +79,7 @@ export const typeDefs = gql`
       bride: String
       date: String
       time: String
+      userArrivalTime: String
       location: String
       venue: String
       memo: String
@@ -275,6 +278,7 @@ export const resolvers = {
         bride,
         date,
         time,
+        userArrivalTime,
         location,
         venue,
         memo,
@@ -294,6 +298,7 @@ export const resolvers = {
         bride,
         date,
         time,
+        userArrivalTime,
         location,
         venue,
         memo,

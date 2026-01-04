@@ -240,7 +240,8 @@ export default function SchedulesPage() {
                   <th className='p-[16px]'>날짜</th>
                   <th className='p-[16px]'>웨딩홀</th>
                   <th className='p-[16px]'>신랑/신부</th>
-                  <th className='p-[16px]'>시간</th>
+                  <th className='p-[16px]'>예식시간</th>
+                  <th className='p-[16px]'>작가도착시간</th>
                   <th className='p-[16px]'>메인</th>
                   <th className='p-[16px]'>서브</th>
                   <th className='p-[16px]'>상태</th>
@@ -274,9 +275,13 @@ export default function SchedulesPage() {
                     <td className='p-[16px] text-body4 text-normal'>
                       {schedule.groom} · {schedule.bride}
                     </td>
-                    {/* 시간 */}
+                    {/* 예식시간 */}
                     <td className='p-[16px] text-body4 text-normal font-medium'>
                       {schedule.time}
+                    </td>
+                    {/* 작가도착시간 */}
+                    <td className='p-[16px] text-body4 text-normal font-medium'>
+                      {schedule.userArrivalTime || '-'}
                     </td>
                     {/* mainUser */}
                     <td className='p-[16px] text-body4 text-default'>

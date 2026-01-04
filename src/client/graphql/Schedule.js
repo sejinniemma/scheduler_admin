@@ -14,6 +14,7 @@ export const GET_SCHEDULES = gql`
       venue
       date
       scheduledAt
+      userArrivalTime
       memo
       mainUserMemo
       subUserMemo
@@ -39,6 +40,7 @@ export const GET_SCHEDULES_LIST = gql`
       venue
       date
       scheduledAt
+      userArrivalTime
       memo
       mainUserMemo
       subUserMemo
@@ -60,6 +62,7 @@ export const CREATE_SCHEDULE = gql`
     $bride: String!
     $date: String!
     $time: String!
+    $userArrivalTime: String
     $location: String
     $venue: String
     $memo: String
@@ -72,6 +75,7 @@ export const CREATE_SCHEDULE = gql`
       bride: $bride
       date: $date
       time: $time
+      userArrivalTime: $userArrivalTime
       location: $location
       venue: $venue
       memo: $memo
@@ -85,6 +89,7 @@ export const CREATE_SCHEDULE = gql`
       date
       time
       scheduledAt
+      userArrivalTime
       location
       venue
       memo
@@ -102,6 +107,7 @@ export const UPDATE_SCHEDULE = gql`
     $bride: String
     $date: String
     $time: String
+    $userArrivalTime: String
     $location: String
     $venue: String
     $memo: String
@@ -115,6 +121,7 @@ export const UPDATE_SCHEDULE = gql`
       bride: $bride
       date: $date
       time: $time
+      userArrivalTime: $userArrivalTime
       location: $location
       venue: $venue
       memo: $memo
@@ -128,6 +135,7 @@ export const UPDATE_SCHEDULE = gql`
       date
       time
       scheduledAt
+      userArrivalTime
       location
       venue
       memo
