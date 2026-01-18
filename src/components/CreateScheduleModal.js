@@ -12,6 +12,7 @@ import {
   StickyNote,
 } from 'lucide-react';
 import DatePicker from './DatePicker';
+import LoadingSpinner from './LoadingSpinner';
 import { GET_USERS } from '@/src/client/graphql/User';
 import {
   CREATE_SCHEDULE,
@@ -690,33 +691,57 @@ export default function CreateScheduleModal({
                 <button
                   type='button'
                   onClick={handleDelete}
-                  className='px-4 py-2 rounded-lg bg-[#D22C2C] cursor-pointer text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='px-4 py-2 rounded-lg bg-[#D22C2C] cursor-pointer text-white text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[80px]'
                   disabled={creating || updating || confirming || deleting}
                 >
-                  {deleting ? '삭제 중...' : '삭제'}
+                  {deleting ? (
+                    <>
+                      <LoadingSpinner type='beat' size={4} color='white' />
+                      <span>삭제 중</span>
+                    </>
+                  ) : (
+                    '삭제'
+                  )}
                 </button>
                 <button
                   type='button'
                   onClick={handleConfirm}
-                  className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]'
                   disabled={creating || updating || confirming || deleting}
                 >
-                  {confirming ? '확정 중...' : '확정완료'}
+                  {confirming ? (
+                    <>
+                      <LoadingSpinner type='beat' size={4} color='white' />
+                      <span>확정 중</span>
+                    </>
+                  ) : (
+                    '확정완료'
+                  )}
                 </button>
               </>
             )}
             <button
               type='submit'
-              className='px-4 py-2 rounded-lg bg-blue-600 cursor-pointer text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='px-4 py-2 rounded-lg bg-blue-600 cursor-pointer text-white text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]'
               disabled={creating || updating || confirming || deleting}
             >
-              {isEditMode
-                ? updating
-                  ? '수정 중...'
-                  : '수정완료'
-                : creating
-                ? '추가 중...'
-                : '추가'}
+              {isEditMode ? (
+                updating ? (
+                  <>
+                    <LoadingSpinner type='beat' size={4} color='white' />
+                    <span>수정 중</span>
+                  </>
+                ) : (
+                  '수정완료'
+                )
+              ) : creating ? (
+                <>
+                  <LoadingSpinner type='beat' size={4} color='white' />
+                  <span>추가 중</span>
+                </>
+              ) : (
+                '추가'
+              )}
             </button>
           </div>
         </form>
