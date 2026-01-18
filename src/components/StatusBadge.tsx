@@ -28,7 +28,7 @@ const getStatusLabel = (status: string): string => {
     case 'completed':
       return '종료';
     case 'delayed':
-      return '지연';
+      return '지연 도착';
     case 'canceled':
       return '취소';
     default:

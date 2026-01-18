@@ -38,6 +38,17 @@ export default function DashboardPage() {
   // 상태별 필터링 (Report status 기준)
   const filteredSchedules = schedules.filter((schedule) => {
     if (statusFilter === 'all') return true;
+    
+    // 도착 탭일 때는 arrival과 delayed 둘 다 포함
+    if (statusFilter === 'arrival') {
+      return (
+        schedule.mainUserReportStatus === 'arrival' ||
+        schedule.subUserReportStatus === 'arrival' ||
+        schedule.mainUserReportStatus === 'delayed' ||
+        schedule.subUserReportStatus === 'delayed'
+      );
+    }
+    
     // MAIN Report status 또는 SUB Report status가 필터와 일치하는지 확인
     return (
       schedule.mainUserReportStatus === statusFilter ||
