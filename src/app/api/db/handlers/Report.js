@@ -15,6 +15,7 @@ export const typeDefs = gql`
     status: String!
     estimatedTime: String
     currentStep: Int!
+    imageUrl: String
     memo: String
     reportedAt: DateTime!
     createdAt: DateTime!

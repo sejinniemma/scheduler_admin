@@ -5,6 +5,7 @@ import { formatDateForGroup } from '@/src/lib/utiles';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import StatusBadge from '@/src/components/StatusBadge';
 import ReportStatusModal from '@/src/components/ReportStatusModal';
+import ReportImageModal from '@/src/components/ReportImageModal';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import type { Schedule } from '@/src/types/schedule';
 
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const { schedules, isLoading, error, refetch } = useSchedule();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
@@ -66,8 +68,9 @@ export default function DashboardPage() {
   });
 
   const handleRowClick = (schedule: Schedule) => {
+    // 이미지 모달 오픈
     setSelectedSchedule(schedule);
-    setIsStatusModalOpen(true);
+    setIsImageModalOpen(true);
   };
 
   const handleRefetch = async () => {
@@ -212,7 +215,14 @@ export default function DashboardPage() {
                       {schedule.subUser}
                     </td>
                     {/* status */}
-                    <td className='p-[16px]'>
+                    <td
+                      className='p-[16px]'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSchedule(schedule);
+                        setIsStatusModalOpen(true);
+                      }}
+                    >
                       {schedule.mainUserReportStatus ? (
                         <div className='flex flex-col gap-[4px] items-center'>
                           {/* MAIN Report가 있으면 위에 표시 */}
@@ -249,6 +259,16 @@ export default function DashboardPage() {
           setIsStatusModalOpen(false);
           setSelectedSchedule(null);
           refetch();
+        }}
+      />
+
+      {/* Report 이미지 모달 */}
+      <ReportImageModal
+        open={isImageModalOpen && !!selectedSchedule}
+        schedule={selectedSchedule}
+        onClose={() => {
+          setIsImageModalOpen(false);
+          setSelectedSchedule(null);
         }}
       />
     </div>

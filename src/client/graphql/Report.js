@@ -119,6 +119,7 @@ export const GET_REPORTS_BY_SCHEDULE = gql`
       user
       role
       status
+      imageUrl
     }
   }
 `;

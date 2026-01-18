@@ -271,14 +271,14 @@ export default function ReportStatusModal({
         <div className='flex gap-[10px] justify-end mt-[30px]'>
           <button
             onClick={onClose}
-            className='px-[20px] py-[10px] text-body4 font-medium text-default bg-light rounded-[5px] hover:bg-lighter transition-colors'
+            className='px-[20px] py-[10px] cursor-pointer text-body4 font-medium text-default bg-light rounded-[5px] hover:bg-lighter transition-colors'
           >
             취소
           </button>
           {(schedule.mainUser || schedule.subUser) && (
             <button
               onClick={handleSubmit}
-              className='px-[20px] py-[10px] text-body4 font-medium text-white bg-blue rounded-[5px] hover:opacity-90 transition-opacity'
+              className='px-[20px] py-[10px] cursor-pointer text-body4 font-medium text-white bg-blue rounded-[5px] hover:opacity-90 transition-opacity'
             >
               저장
             </button>
