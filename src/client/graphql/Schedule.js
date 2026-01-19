@@ -46,6 +46,8 @@ export const GET_SCHEDULES_LIST = gql`
       subUserMemo
       mainUserReportStatus
       subUserReportStatus
+      mainUserConfirmed
+      subUserConfirmed
       status
       createdAt
       updatedAt

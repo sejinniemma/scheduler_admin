@@ -14,6 +14,8 @@ export interface Schedule {
   subUserMemo?: string | null;
   mainUserReportStatus?: string | null;
   subUserReportStatus?: string | null;
+  mainUserConfirmed?: boolean;
+  subUserConfirmed?: boolean;
   status: string;
   currentStep?: number;
   createdAt?: string;

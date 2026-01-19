@@ -331,10 +331,20 @@ export default function SchedulesPage() {
                {/* mainUser */}
                <td className='p-[16px] text-body4 text-default'>
                  {schedule.mainUser || '-'}
+                 {schedule.mainUserConfirmed && (
+                   <span className='text-caption2 text-red ml-[4px]'>
+                     (확정)
+                   </span>
+                 )}
                </td>
                {/* subUser */}
                <td className='p-[16px] text-body4 text-default'>
                  {schedule.subUser || '-'}
+                 {schedule.subUserConfirmed && (
+                   <span className='text-caption2 text-red ml-[4px]'>
+                     (확정)
+                   </span>
+                 )}
                </td>
                {/* status */}
                <td className='p-[16px]'>

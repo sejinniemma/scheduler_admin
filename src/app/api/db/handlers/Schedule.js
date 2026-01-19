@@ -1,6 +1,7 @@
 import Schedule from '../models/Schedule';
 import User from '../models/User';
 import Report from '../models/Report';
+import UserConfirm from '../models/UserConfirm';
 import { connectToDatabase } from '../mongodb';
 import { gql } from '@apollo/client';
 
@@ -45,6 +46,8 @@ export const typeDefs = gql`
     subUserMemo: String
     mainUserReportStatus: String
     subUserReportStatus: String
+    mainUserConfirmed: Boolean
+    subUserConfirmed: Boolean
     status: String!
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -243,6 +246,26 @@ export const resolvers = {
             }
           }
 
+          // UserConfirm 데이터 조회
+          let mainUserConfirmed = false;
+          let subUserConfirmed = false;
+
+          if (schedule.mainUser) {
+            const mainUserConfirm = await UserConfirm.findOne({
+              scheduleId: schedule.id,
+              userId: schedule.mainUser,
+            });
+            mainUserConfirmed = mainUserConfirm?.confirmed === true;
+          }
+
+          if (schedule.subUser) {
+            const subUserConfirm = await UserConfirm.findOne({
+              scheduleId: schedule.id,
+              userId: schedule.subUser,
+            });
+            subUserConfirmed = subUserConfirm?.confirmed === true;
+          }
+
           return {
             ...schedule.toObject(),
             mainUser: mainUserDoc?.name || schedule.mainUser || '-',
@@ -252,6 +275,8 @@ export const resolvers = {
             subUserMemo: subUserMemo || null,
             mainUserReportStatus: mainUserReportStatus || null,
             subUserReportStatus: subUserReportStatus || null,
+            mainUserConfirmed: mainUserConfirmed || false,
+            subUserConfirmed: subUserConfirmed || false,
           };
         })
       );
