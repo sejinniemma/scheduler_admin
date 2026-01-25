@@ -79,7 +79,7 @@ export default function DashboardPage() {
       await refetch();
     } finally {
       setIsRefreshing(false);
-    }
+  }
   };
 
   
@@ -112,8 +112,8 @@ export default function DashboardPage() {
     <div className='p-[40px]'>
       <div className='flex items-center justify-between mb-[40px]'>
         <h1 className='text-body4 text-normal font-semibold'>
-          {getTodayDate()}
-        </h1>
+        {getTodayDate()}
+      </h1>
         <button
           onClick={handleRefetch}
           disabled={isRefreshing}
@@ -166,24 +166,24 @@ export default function DashboardPage() {
         isRefreshing ? (
           <div className='flex items-center justify-center h-[400px]'>
             <LoadingSpinner type='beat' size='lg' />
-          </div>
-        ) : (
-          <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead className='bg-light border-b border-line-base'>
-                  <tr className='text-caption1 font-bold text-[#454545] text-center'>
-                    <th className='p-[16px]'>번호</th>
-                    <th className='p-[16px]'>웨딩홀</th>
+        </div>
+      ) : (
+        <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-light border-b border-line-base'>
+                <tr className='text-caption1 font-bold text-[#454545] text-center'>
+                  <th className='p-[16px]'>번호</th>
+                  <th className='p-[16px]'>웨딩홀</th>
                     <th className='p-[16px]'>예식시간</th>
                     <th className='p-[16px]'>작가도착예정시간</th>
-                    <th className='p-[16px]'>메인</th>
-                    <th className='p-[16px]'>서브</th>
+                  <th className='p-[16px]'>메인</th>
+                  <th className='p-[16px]'>서브</th>
                     <th className='p-[16px]'>상태</th>
-                  </tr>
-                </thead>
-                <tbody className='text-center'>
-                  {sortedSchedules.map((schedule, index) => (
+                </tr>
+              </thead>
+              <tbody className='text-center'>
+                {sortedSchedules.map((schedule, index) => (
                   <tr
                     key={schedule.id}
                     onClick={() => handleRowClick(schedule)}
@@ -219,9 +219,9 @@ export default function DashboardPage() {
                       className='p-[16px]'
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedSchedule(schedule);
+                            setSelectedSchedule(schedule);
                         setIsStatusModalOpen(true);
-                      }}
+                          }}
                     >
                       {schedule.mainUserReportStatus ? (
                         <div className='flex flex-col gap-[4px] items-center'>
@@ -239,11 +239,11 @@ export default function DashboardPage() {
                       )}
                     </td>
                   </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
         )
       )}
 

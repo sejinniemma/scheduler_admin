@@ -14,7 +14,7 @@ const PCLayout = ({
     <section
       id={id}
       className={cn(
-        'flex justify-center items-center max-w-[1440px] h-screen bg-light  mx-auto w-full',
+        'flex justify-center items-center max-w-[1920px] h-screen bg-light  mx-auto w-full',
         className
       )}
     >

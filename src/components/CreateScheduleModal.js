@@ -24,6 +24,7 @@ import {
   DELETE_REPORT,
   GET_REPORTS_BY_SCHEDULE,
 } from '@/src/client/graphql/Report';
+import { subtractOneHour } from '../lib/utiles';
 
 export default function CreateScheduleModal({
   open = false,
@@ -59,6 +60,8 @@ export default function CreateScheduleModal({
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const calendarRef = useRef(null);
+  const timeInputRef = useRef(null);
+  const arrivalTimeInputRef = useRef(null);
 
   const isEditMode = !!schedule;
 
@@ -120,11 +123,13 @@ export default function CreateScheduleModal({
         request: '', // 요청사항은 별도 필드가 없으므로 빈 값
       });
     } else {
-      // 생성 모드일 때 폼 초기화
+      // 생성 모드일 때 폼 초기화 - 예식 시간 기본값 11:00, 도착 시간 10:00
+      const defaultTime = '11:00';
+      const defaultArrivalTime = subtractOneHour(defaultTime);
       setFormData({
         date: '',
-        time: '',
-        userArrivalTime: '',
+        time: defaultTime,
+        userArrivalTime: defaultArrivalTime,
         venue: '',
         location: '',
         mainUser: '',
@@ -143,7 +148,16 @@ export default function CreateScheduleModal({
     usersData?.users?.filter((user) => user.status === 'ACTIVE') || [];
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+      
+      // 예식 시간이 변경되면 작가 도착 시간을 자동으로 한 시간 전으로 설정
+      if (field === 'time' && value) {
+        newData.userArrivalTime = subtractOneHour(value);
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -576,10 +590,18 @@ export default function CreateScheduleModal({
             {/* 시간 */}
             <Field label='예식 시간' required icon={<Clock size={16} />}>
               <input
+                ref={timeInputRef}
                 type='time'
-                className='input'
+                className='input cursor-pointer'
                 value={formData.time}
                 onChange={(e) => handleChange('time', e.target.value)}
+                onClick={() => {
+                  if (timeInputRef.current) {
+                    if (typeof timeInputRef.current.showPicker === 'function') {
+                      timeInputRef.current.showPicker();
+                    }
+                  }
+                }}
                 required
               />
             </Field>
@@ -587,12 +609,20 @@ export default function CreateScheduleModal({
             {/* 작가 도착 시간 */}
             <Field label='작가 도착 시간' required icon={<Clock size={16} />}>
               <input
+                ref={arrivalTimeInputRef}
                 type='time'
-                className='input'
+                className='input cursor-pointer'
                 value={formData.userArrivalTime}
                 onChange={(e) =>
                   handleChange('userArrivalTime', e.target.value)
                 }
+                onClick={() => {
+                  if (arrivalTimeInputRef.current) {
+                    if (typeof arrivalTimeInputRef.current.showPicker === 'function') {
+                      arrivalTimeInputRef.current.showPicker();
+                    }
+                  }
+                }}
                 placeholder='예: 10:30'
               />
             </Field>
@@ -703,7 +733,8 @@ export default function CreateScheduleModal({
                     '삭제'
                   )}
                 </button>
-                <button
+            {schedule.status !== "confirmed" &&  
+            <button
                   type='button'
                   onClick={handleConfirm}
                   className='px-4 py-2 rounded-lg bg-green-600 cursor-pointer text-white text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]'
@@ -717,7 +748,7 @@ export default function CreateScheduleModal({
                   ) : (
                     '확정완료'
                   )}
-                </button>
+                </button>}
               </>
             )}
             <button

@@ -52,3 +52,18 @@ export const getDateColor = (date: string): 'blue' | 'red' => {
   // 일요일(0)이면 빨간색, 그 외는 파란색
   return dayOfWeek === 0 ? 'red' : 'blue';
 };
+
+
+  // 시간에서 한 시간 빼기 (HH:MM 형식)
+  export const subtractOneHour = (timeString: string): string | undefined => {
+    if (!timeString || !timeString.includes(':')) return '';
+    
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    date.setHours(date.getHours() - 1);
+    
+    const newHours = String(date.getHours()).padStart(2, '0');
+    const newMinutes = String(date.getMinutes()).padStart(2, '0');
+    return `${newHours}:${newMinutes}`;
+  };

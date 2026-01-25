@@ -5,6 +5,7 @@ import { useSchedule } from '@/src/contexts/ScheduleContext';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import type { Schedule } from '@/src/types/schedule';
+import { ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon } from 'lucide-react';
 
 type StatusFilter = 'all' | 'unassigned' | 'assigned' | 'confirmed';
 
@@ -168,9 +169,7 @@ export default function SchedulesPage() {
 
   return (
     <div className='p-[40px]'>
-      {/* <h1 className='text-body4 text-normal font-semibold mb-[40px]'>
-        일정관리
-      </h1> */}
+
       {/* 새일정 추가 및 새로고침 */}
       <div className='flex justify-end gap-[10px] mb-[20px]'>
         <button
@@ -179,21 +178,7 @@ export default function SchedulesPage() {
           className='px-[12px] py-[6px] cursor-pointer bg-light text-normal text-caption1 font-medium rounded-[5px] hover:bg-lighter transition-colors flex items-center gap-[6px] disabled:opacity-50 disabled:cursor-not-allowed'
           title='새로고침'
         >
-          <svg
-            width='16'
-            height='16'
-            viewBox='0 0 16 16'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M8 2.66667V1.33333M8 1.33333L6 3.33333M8 1.33333L10 3.33333M3.33333 8C3.33333 10.5773 5.42267 12.6667 8 12.6667C9.84 12.6667 11.42 11.5867 12.1867 10M12.6667 8C12.6667 5.42267 10.5773 3.33333 8 3.33333C6.16 3.33333 4.58 4.41333 3.81333 6M13.3333 8H14.6667M1.33333 8H2.66667'
-              stroke='currentColor'
-              strokeWidth='1.5'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
+        <RefreshCwIcon size={16} className='text-normal' />
           새로고침
         </button>
         <button
@@ -206,51 +191,11 @@ export default function SchedulesPage() {
 
       {/* 월별 네비게이션 */}
       <div className='flex items-center justify-start gap-[20px] mb-[20px]'>
-        <button
-          onClick={handlePrevMonth}
-          className='p-[8px] cursor-pointer hover:bg-light rounded-[4px] transition-colors'
-          aria-label='이전 달'
-        >
-          <svg
-            width='20'
-            height='20'
-            viewBox='0 0 20 20'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M12.5 15L7.5 10L12.5 5'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </button>
+        <ChevronLeftIcon size={16} className='text-normal cursor-pointer' onClick={handlePrevMonth}/>
         <h2 className='text-body3 text-normal font-semibold min-w-[120px] text-center'>
           {monthDisplay}
         </h2>
-        <button
-          onClick={handleNextMonth}
-          className='p-[8px] cursor-pointer hover:bg-light rounded-[4px] transition-colors'
-          aria-label='다음 달'
-        >
-          <svg
-            width='20'
-            height='20'
-            viewBox='0 0 20 20'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M7.5 15L12.5 10L7.5 5'
-              stroke='currentColor'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </button>
+        <ChevronRightIcon size={16} className='text-normal cursor-pointer' onClick={handleNextMonth}/>
       </div>
 
       {/* 상태 탭 */}
