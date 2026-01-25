@@ -197,7 +197,7 @@ export default function DashboardPage() {
                       {index + 1}
                     </td>
                     {/* 웨딩홀 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {schedule.venue || '-'}
                       <p>{`(${schedule.location})`}</p>
                     </td>
@@ -210,11 +210,11 @@ export default function DashboardPage() {
                       {schedule.userArrivalTime || '-'}
                     </td>
                     {/* mainUser */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {schedule.mainUser}
                     </td>
                     {/* subUser */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {schedule.subUser}
                     </td>
                     {/* status */}

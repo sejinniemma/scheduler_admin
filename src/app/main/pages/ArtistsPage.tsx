@@ -219,35 +219,35 @@ export default function ArtistsPage() {
                       {user.name}
                     </td>
                     {/* 전화번호 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {user.phone}
                     </td>
                     {/* 성별 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {getGenderLabel(user.gender)}
                     </td>
                     {/* 주소 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {user.address || '-'}
                     </td>
                     {/* 주 활동지역 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {user.mainLocation || '-'}
                     </td>
                     {/* 차량보유 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {user.hasVehicle ? '보유' : '-'}
                     </td>
                     {/* 시작일 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {formatDate(user.startDate)}
                     </td>
                     {/* 상태 */}
-                    <td className='p-[16px] text-body4 text-default'>
+                    <td className='p-[16px] text-body4 text-normal'>
                       {getStatusLabel(user.status)}
                     </td>
                     {/* 메모 */}
-                    <td className='p-[16px] text-body4 text-default max-w-[200px] truncate'>
+                    <td className='p-[16px] text-body4 text-normal max-w-[200px] truncate'>
                       {user.memo || '-'}
                     </td>
                     {/* 상세 - 수정 버튼 */}

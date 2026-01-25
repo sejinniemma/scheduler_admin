@@ -62,6 +62,14 @@ export default function CreateScheduleModal({
   const calendarRef = useRef(null);
   const timeInputRef = useRef(null);
   const arrivalTimeInputRef = useRef(null);
+  
+  // 작가 검색 상태
+  const [mainUserSearch, setMainUserSearch] = useState('');
+  const [subUserSearch, setSubUserSearch] = useState('');
+  const [showMainUserDropdown, setShowMainUserDropdown] = useState(false);
+  const [showSubUserDropdown, setShowSubUserDropdown] = useState(false);
+  const mainUserDropdownRef = useRef(null);
+  const subUserDropdownRef = useRef(null);
 
   const isEditMode = !!schedule;
 
@@ -85,11 +93,41 @@ export default function CreateScheduleModal({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showCalendar]);
+  
+  // 작가 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        mainUserDropdownRef.current &&
+        !mainUserDropdownRef.current.contains(event.target) &&
+        showMainUserDropdown
+      ) {
+        setShowMainUserDropdown(false);
+      }
+      if (
+        subUserDropdownRef.current &&
+        !subUserDropdownRef.current.contains(event.target) &&
+        showSubUserDropdown
+      ) {
+        setShowSubUserDropdown(false);
+      }
+    };
+
+    if (showMainUserDropdown || showSubUserDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMainUserDropdown, showSubUserDropdown]);
 
   // 수정 모드일 때 스케줄 데이터로 폼 초기화
   useEffect(() => {
     if (!open) {
       setShowCalendar(false);
+      setShowMainUserDropdown(false);
+      setShowSubUserDropdown(false);
       return;
     }
 
@@ -122,6 +160,9 @@ export default function CreateScheduleModal({
         memo: schedule.memo || '',
         request: '', // 요청사항은 별도 필드가 없으므로 빈 값
       });
+      // 검색어 초기화
+      setMainUserSearch(mainUserName || '');
+      setSubUserSearch(subUserName || '');
     } else {
       // 생성 모드일 때 폼 초기화 - 예식 시간 기본값 11:00, 도착 시간 10:00
       const defaultTime = '11:00';
@@ -139,6 +180,9 @@ export default function CreateScheduleModal({
         memo: '',
         request: '',
       });
+      // 검색어 초기화
+      setMainUserSearch('');
+      setSubUserSearch('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule, open]);
@@ -146,6 +190,45 @@ export default function CreateScheduleModal({
   // ACTIVE 상태인 사용자만 필터링
   const activeUsers =
     usersData?.users?.filter((user) => user.status === 'ACTIVE') || [];
+  
+  // 작가 검색 필터링
+  const filteredMainUsers = activeUsers.filter((user) =>
+    user.name.toLowerCase().includes(mainUserSearch.toLowerCase())
+  );
+  const filteredSubUsers = activeUsers.filter((user) =>
+    user.name.toLowerCase().includes(subUserSearch.toLowerCase())
+  );
+  
+  // 선택된 작가 이름 가져오기
+  const getSelectedUserName = (userId) => {
+    if (!userId) return '';
+    const user = activeUsers.find((u) => u.id === userId);
+    return user?.name || '';
+  };
+
+  // 시간 형식 검증 (HH:MM, 10분 단위)
+  const validateTime = (timeString) => {
+    const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
+    if (!timeRegex.test(timeString)) {
+      return false;
+    }
+    const minutes = parseInt(timeString.split(':')[1], 10);
+    return minutes % 10 === 0;
+  };
+
+  // 시간 포맷팅 (10분 단위로 반올림)
+  const formatTimeToTenMinutes = (timeString) => {
+    if (!timeString) return '';
+    const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
+    if (!timeRegex.test(timeString)) {
+      return timeString; // 형식이 맞지 않으면 그대로 반환
+    }
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const roundedMinutes = Math.round(minutes / 10) * 10;
+    const finalMinutes = roundedMinutes >= 60 ? 0 : roundedMinutes;
+    const finalHours = roundedMinutes >= 60 ? (hours + 1) % 24 : hours;
+    return `${String(finalHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
+  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => {
@@ -153,11 +236,31 @@ export default function CreateScheduleModal({
       
       // 예식 시간이 변경되면 작가 도착 시간을 자동으로 한 시간 전으로 설정
       if (field === 'time' && value) {
-        newData.userArrivalTime = subtractOneHour(value);
+        // 시간 형식이 맞으면 포맷팅하고 도착 시간 설정
+        if (validateTime(value)) {
+          newData.userArrivalTime = subtractOneHour(value);
+        }
       }
       
       return newData;
     });
+  };
+  
+  // 예식 시간 입력 핸들러 (10분 단위 검증)
+  const handleTimeChange = (e) => {
+    const value = e.target.value;
+    // 입력 중에는 그대로 표시, 포커스 아웃 시 포맷팅
+    handleChange('time', value);
+  };
+  
+  const handleTimeBlur = (e) => {
+    const value = e.target.value;
+    if (value) {
+      const formatted = formatTimeToTenMinutes(value);
+      if (formatted !== value) {
+        handleChange('time', formatted);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -591,19 +694,18 @@ export default function CreateScheduleModal({
             <Field label='예식 시간' required icon={<Clock size={16} />}>
               <input
                 ref={timeInputRef}
-                type='time'
-                className='input cursor-pointer'
+                type='text'
+                className='input'
                 value={formData.time}
-                onChange={(e) => handleChange('time', e.target.value)}
-                onClick={() => {
-                  if (timeInputRef.current) {
-                    if (typeof timeInputRef.current.showPicker === 'function') {
-                      timeInputRef.current.showPicker();
-                    }
-                  }
-                }}
+                onChange={handleTimeChange}
+                onBlur={handleTimeBlur}
+                placeholder='예: 11:00 (10분 단위)'
+                pattern='^([0-1][0-9]|2[0-3]):([0-5][0-9])$'
                 required
               />
+              <p className='hint'>
+                10분 단위로 입력해주세요 (예: 11:00, 11:10, 11:20)
+              </p>
             </Field>
 
             {/* 작가 도착 시간 */}
@@ -651,43 +753,125 @@ export default function CreateScheduleModal({
             {/* 작가 */}
             <div className='grid grid-cols-2 gap-3'>
               <Field label='메인 작가' icon={<User size={16} />}>
-                <select
-                  className='input'
-                  value={formData.mainUser}
-                  onChange={(e) => handleChange('mainUser', e.target.value)}
-                >
-                  <option value=''>미배정</option>
-                  {usersLoading ? (
-                    <option disabled>로딩 중...</option>
-                  ) : (
-                    activeUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name}
-                      </option>
-                    ))
+                <div className='relative' ref={mainUserDropdownRef}>
+                  <input
+                    type='text'
+                    className='input'
+                    value={mainUserSearch || getSelectedUserName(formData.mainUser)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setMainUserSearch(value);
+                      setShowMainUserDropdown(true);
+                      // 검색어가 비어있으면 선택 해제
+                      if (!value) {
+                        handleChange('mainUser', '');
+                      }
+                    }}
+                    onFocus={() => setShowMainUserDropdown(true)}
+                    placeholder='작가 이름을 검색하세요'
+                  />
+                  {showMainUserDropdown && (
+                    <div className='absolute z-10 w-full mt-1 bg-white border border-line-base rounded-[5px] shadow-lg max-h-[200px] overflow-y-auto'>
+                      {usersLoading ? (
+                        <div className='p-[12px] text-body4 text-default'>
+                          로딩 중...
+                        </div>
+                      ) : filteredMainUsers.length > 0 ? (
+                        filteredMainUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            className='p-[12px] cursor-pointer hover:bg-light text-body4 text-normal'
+                            onClick={() => {
+                              handleChange('mainUser', user.id);
+                              setMainUserSearch(user.name);
+                              setShowMainUserDropdown(false);
+                            }}
+                          >
+                            {user.name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className='p-[12px] text-body4 text-default'>
+                          검색 결과가 없습니다
+                        </div>
+                      )}
+                      {mainUserSearch && (
+                        <div
+                          className='p-[12px] cursor-pointer hover:bg-light text-body4 text-secondary border-t border-line-base'
+                          onClick={() => {
+                            handleChange('mainUser', '');
+                            setMainUserSearch('');
+                            setShowMainUserDropdown(false);
+                          }}
+                        >
+                          미배정
+                        </div>
+                      )}
+                    </div>
                   )}
-                </select>
+                </div>
                 <p className='hint'>
                   메인 작가를 비워두면 미배정 상태로 등록됩니다.
                 </p>
               </Field>
               <Field label='서브 작가' icon={<User size={16} />}>
-                <select
-                  className='input'
-                  value={formData.subUser}
-                  onChange={(e) => handleChange('subUser', e.target.value)}
-                >
-                  <option value=''>없음</option>
-                  {usersLoading ? (
-                    <option disabled>로딩 중...</option>
-                  ) : (
-                    activeUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name}
-                      </option>
-                    ))
+                <div className='relative' ref={subUserDropdownRef}>
+                  <input
+                    type='text'
+                    className='input'
+                    value={subUserSearch || getSelectedUserName(formData.subUser)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSubUserSearch(value);
+                      setShowSubUserDropdown(true);
+                      // 검색어가 비어있으면 선택 해제
+                      if (!value) {
+                        handleChange('subUser', '');
+                      }
+                    }}
+                    onFocus={() => setShowSubUserDropdown(true)}
+                    placeholder='작가 이름을 검색하세요'
+                  />
+                  {showSubUserDropdown && (
+                    <div className='absolute z-10 w-full mt-1 bg-white border border-line-base rounded-[5px] shadow-lg max-h-[200px] overflow-y-auto'>
+                      {usersLoading ? (
+                        <div className='p-[12px] text-body4 text-default'>
+                          로딩 중...
+                        </div>
+                      ) : filteredSubUsers.length > 0 ? (
+                        filteredSubUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            className='p-[12px] cursor-pointer hover:bg-light text-body4 text-normal'
+                            onClick={() => {
+                              handleChange('subUser', user.id);
+                              setSubUserSearch(user.name);
+                              setShowSubUserDropdown(false);
+                            }}
+                          >
+                            {user.name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className='p-[12px] text-body4 text-default'>
+                          검색 결과가 없습니다
+                        </div>
+                      )}
+                      {subUserSearch && (
+                        <div
+                          className='p-[12px] cursor-pointer hover:bg-light text-body4 text-secondary border-t border-line-base'
+                          onClick={() => {
+                            handleChange('subUser', '');
+                            setSubUserSearch('');
+                            setShowSubUserDropdown(false);
+                          }}
+                        >
+                          없음
+                        </div>
+                      )}
+                    </div>
                   )}
-                </select>
+                </div>
               </Field>
             </div>
 

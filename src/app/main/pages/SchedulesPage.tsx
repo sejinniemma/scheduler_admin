@@ -253,10 +253,10 @@ export default function SchedulesPage() {
                  {schedule.date}
                </td>
                {/* 웨딩홀 */}
-               <td className='p-[16px] text-body4 text-default'>
+               <td className='p-[16px] text-body4 text-normal'>
                  {schedule.venue || '-'}
                  {schedule.location && (
-                   <p className='text-caption2 text-secondary mt-[5px]'>
+                   <p className='text-caption2 text-normal mt-[5px]'>
                      ({schedule.location})
                    </p>
                  )}
@@ -274,7 +274,7 @@ export default function SchedulesPage() {
                  {schedule.userArrivalTime || '-'}
                </td>
                {/* mainUser */}
-               <td className='p-[16px] text-body4 text-default'>
+               <td className='p-[16px] text-body4 text-normal'>
                  {schedule.mainUser || '-'}
                  {schedule.mainUserConfirmed && (
                    <span className='text-caption2 text-red ml-[4px]'>
