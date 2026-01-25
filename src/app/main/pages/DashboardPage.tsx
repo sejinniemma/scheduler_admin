@@ -119,11 +119,9 @@ export default function DashboardPage() {
           onClick={handleRefetch}
           disabled={isRefreshing}
           className='px-[12px] py-[6px] cursor-pointer bg-light text-normal text-caption1 font-medium rounded-[5px] hover:bg-lighter transition-colors flex items-center gap-[6px] disabled:opacity-50 disabled:cursor-not-allowed'
-          title='새로고침'
         >
         </button>
         <RefreshCwIcon size={16} className='text-normal' />
-           새로고침
       </div>
 
       {/* 상태 탭 */}

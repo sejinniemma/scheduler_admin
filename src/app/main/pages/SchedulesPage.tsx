@@ -3,10 +3,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
+import BulkConfirmModal from '@/src/components/BulkConfirmModal';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import DatePicker from '@/src/components/DatePicker';
 import type { Schedule } from '@/src/types/schedule';
-import { ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon, Calendar } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, RefreshCwIcon, Calendar, Pencil } from 'lucide-react';
 
 type StatusFilter = 'all' | 'unassigned' | 'assigned' | 'confirmed';
 
@@ -19,6 +20,7 @@ export default function SchedulesPage() {
     null
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isBulkConfirmModalOpen, setIsBulkConfirmModalOpen] = useState(false);
 
   // 현재 선택된 년/월 상태
   const [currentDate, setCurrentDate] = useState(() => {
@@ -32,13 +34,14 @@ export default function SchedulesPage() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const datePickerRef = useRef<HTMLDivElement>(null);
 
-  // 월 표시 포맷 (예: "2024년 1월")
+  // 월 표시 포맷 (예: "24.02.25")
   const monthDisplay = useMemo(() => {
     if (selectedDate) {
-      const date = new Date(selectedDate);
-      return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+      return formatDate(selectedDate);
     }
-    return `${currentDate.year}년 ${currentDate.month}월`;
+    const year = String(currentDate.year).slice(-2);
+    const month = String(currentDate.month).padStart(2, '0');
+    return `${year}.${month}`;
   }, [currentDate, selectedDate]);
 
   // 이전 달로 이동
@@ -180,6 +183,15 @@ export default function SchedulesPage() {
     }
   };
 
+  // 날짜 포맷팅 함수 (YY.MM.DD 형식)
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = String(date.getFullYear()).slice(-2); // 마지막 2자리
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
+
   // 날짜의 요일 색상 반환
   const getDateColor = (dateString: string) => {
     const date = new Date(dateString);
@@ -258,16 +270,8 @@ export default function SchedulesPage() {
           onClick={handleRefetch}
           disabled={isRefreshing}
           className='px-[12px] py-[6px] cursor-pointer bg-light text-normal text-caption1 font-medium rounded-[5px] hover:bg-lighter transition-colors flex items-center gap-[6px] disabled:opacity-50 disabled:cursor-not-allowed'
-          title='새로고침'
         >
         <RefreshCwIcon size={16} className='text-normal' />
-          새로고침
-        </button>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
-        >
-          + 새 일정
         </button>
       </div>
 
@@ -317,21 +321,37 @@ export default function SchedulesPage() {
         />
       </div>
 
-      {/* 상태 탭 */}
-      <div className='flex gap-[10px] mb-[20px] border-b border-line-base'>
-        {statusTabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setStatusFilter(tab.key)}
-            className={`px-[20px] py-[12px] cursor-pointer text-body4 font-medium transition-colors border-b-2 ${
-              statusFilter === tab.key
-                ? 'border-blue text-blue font-semibold'
-                : 'border-transparent text-default hover:text-normal'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* 상태 탭 및 일괄 확정 버튼 */}
+      <div className='flex items-center justify-between mb-[20px] flex-shrink-0'>
+        <div className='flex gap-[10px] border-b border-line-base'>
+          {statusTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`px-[20px] py-[12px] cursor-pointer text-body4 font-medium transition-colors border-b-2 ${
+                statusFilter === tab.key
+                  ? 'border-blue text-blue font-semibold'
+                  : 'border-transparent text-default hover:text-normal'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+   <div className='flex gap-[10px]'>
+     <button
+          onClick={() => setIsBulkConfirmModalOpen(true)}
+          className='px-[12px] py-[6px] cursor-pointer bg-green text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+        >
+          일괄 확정
+        </button>
+           <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+        >
+          + 새 일정
+        </button>
+   </div>
       </div>
 
       {sortedSchedules.length === 0 ? (
@@ -369,7 +389,7 @@ export default function SchedulesPage() {
                </td>
                {/* 날짜 */}
                <td className={`p-[16px] text-body4 font-medium ${getDateColor(schedule.date)}`}>
-                 {schedule.date}
+                 {formatDate(schedule.date)}
                </td>
                {/* 웨딩홀 */}
                <td className='p-[16px] text-body4 text-normal'>
@@ -424,9 +444,9 @@ export default function SchedulesPage() {
                <td className='p-[16px]'>
                  <button
                    onClick={() => handleEdit(schedule)}
-                   className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
+                   className='px-[12px] py-[6px] cursor-pointer bg-gray-50 text-normal text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
                  >
-                   수정
+                <Pencil size={16} className='text-normal' />
                  </button>
                </td>
              </tr>
@@ -453,7 +473,23 @@ export default function SchedulesPage() {
           setSelectedSchedule(null);
         }}
         onSuccess={handleEditSuccess}
-      />  
+      />
+
+      {/* 일괄 확정 모달 */}
+      <BulkConfirmModal
+        open={isBulkConfirmModalOpen}
+        onClose={() => setIsBulkConfirmModalOpen(false)}
+        onSuccess={async () => {
+          setIsBulkConfirmModalOpen(false);
+          setIsRefreshing(true);
+          try {
+            await refetch();
+          } finally {
+            setIsRefreshing(false);
+          }
+        }}
+        schedules={schedules}
+      />
     </div>
   );
 }

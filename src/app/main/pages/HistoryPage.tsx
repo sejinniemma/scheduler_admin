@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import StatusBadge from '@/src/components/StatusBadge';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
+import { RefreshCwIcon } from 'lucide-react';
 
 type StatusFilter = 'all' | 'completed' | 'delayed' | 'canceled';
 
@@ -81,6 +82,15 @@ export default function HistoryPage() {
     return a.time.localeCompare(b.time);
   });
 
+  // 날짜 포맷팅 함수 (YY.MM.DD 형식)
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const year = String(date.getFullYear()).slice(-2); // 마지막 2자리
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
+
   const handleRefetch = async () => {
     setIsRefreshing(true);
     try {
@@ -120,24 +130,9 @@ export default function HistoryPage() {
           onClick={handleRefetch}
           disabled={isRefreshing}
           className='px-[12px] py-[6px] cursor-pointer bg-light text-normal text-caption1 font-medium rounded-[5px] hover:bg-lighter transition-colors flex items-center gap-[6px] disabled:opacity-50 disabled:cursor-not-allowed'
-          title='새로고침'
         >
-          <svg
-            width='16'
-            height='16'
-            viewBox='0 0 16 16'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M8 2.66667V1.33333M8 1.33333L6 3.33333M8 1.33333L10 3.33333M3.33333 8C3.33333 10.5773 5.42267 12.6667 8 12.6667C9.84 12.6667 11.42 11.5867 12.1867 10M12.6667 8C12.6667 5.42267 10.5773 3.33333 8 3.33333C6.16 3.33333 4.58 4.41333 3.81333 6M13.3333 8H14.6667M1.33333 8H2.66667'
-              stroke='currentColor'
-              strokeWidth='1.5'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-          새로고침
+        
+    < RefreshCwIcon size={16} className='text-normal' />
         </button>
       </div>
 
@@ -245,7 +240,7 @@ export default function HistoryPage() {
                     </td>
                     {/* 날짜 */}
                     <td className='p-[16px] text-body4 text-normal font-medium'>
-                      {schedule.date}
+                      {formatDate(schedule.date)}
                     </td>
                     {/* 웨딩홀 */}
                     <td className='p-[16px] text-body4 text-default'>

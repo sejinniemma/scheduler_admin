@@ -83,7 +83,7 @@ export default function DatePicker({
   }
 
   return (
-    <div className='absolute z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-full max-w-[320px]'>
+    <div className='absolute z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-[500px] max-w-[320px]'>
       {/* 헤더 */}
       <div className='flex items-center justify-between mb-4'>
         <button

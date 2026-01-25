@@ -39,21 +39,21 @@ const getStatusLabel = (status: string): string => {
 const getStatusColor = (status: string): string => {
   switch (status) {
     case 'arrival':
-      return '#00A63E'; // 도착완료
+      return '#10B981'; // 도착완료 - emerald-500 (밝은 녹색)
     case 'pending':
-      return '#808080'; // 대기 (회색)
+      return '#6B7280'; // 대기 - gray-500 (중립 회색)
     case 'wakeup':
-      return '#FFC0CB'; // 기상완료
+      return '#A78BFA'; // 기상완료 - violet-400 (부드러운 보라색)
     case 'departure':
-      return '#4582ED'; // 출발완료
+      return '#3B82F6'; // 출발완료 - blue-500 (신뢰감 있는 파란색)
     case 'delayed':
-      return '#FF9000'; // 지연
+      return '#F59E0B'; // 지연 도착 - amber-500 (주의 주황색)
     case 'completed':
-      return '#800080'; // 완료
+      return '#059669'; // 종료 - emerald-600 (진한 녹색)
     case 'canceled':
-      return '#FF0000'; // 취소
+      return '#EF4444'; // 취소 - red-500 (명확한 빨간색)
     default:
-      return '#808080'; // 기본값 (회색)
+      return '#6B7280'; // 기본값 - gray-500 (중립 회색)
   }
 };
 
