@@ -91,7 +91,7 @@ export default function DatePicker({
           onClick={handlePrevMonth}
           className='p-1 hover:bg-gray-100 rounded transition-colors'
         >
-          <ChevronLeft size={20} className='text-gray-600' />
+          <ChevronLeft size={20} className='text-gray-600 cursor-pointer' />
         </button>
         <div className='text-lg font-semibold text-gray-800'>
           {year}년 {monthNames[month]}
@@ -101,7 +101,7 @@ export default function DatePicker({
           onClick={handleNextMonth}
           className='p-1 hover:bg-gray-100 rounded transition-colors'
         >
-          <ChevronRight size={20} className='text-gray-600' />
+          <ChevronRight size={20} className='text-gray-600 cursor-pointer' />
         </button>
       </div>
 
@@ -139,7 +139,7 @@ export default function DatePicker({
               key={idx}
               type='button'
               onClick={() => handleDateClick(day)}
-              className={`aspect-square flex items-center justify-center text-sm rounded-lg transition-all ${
+              className={`aspect-square flex items-center justify-center cursor-pointer text-sm rounded-lg transition-all ${
                 selected
                   ? 'bg-blue-600 text-white font-semibold shadow-md'
                   : today

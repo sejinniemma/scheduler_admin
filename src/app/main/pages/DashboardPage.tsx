@@ -8,6 +8,7 @@ import ReportStatusModal from '@/src/components/ReportStatusModal';
 import ReportImageModal from '@/src/components/ReportImageModal';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import type { Schedule } from '@/src/types/schedule';
+import { RefreshCwIcon } from 'lucide-react';
 
 type StatusFilter =
   | 'all'
@@ -120,23 +121,9 @@ export default function DashboardPage() {
           className='px-[12px] py-[6px] cursor-pointer bg-light text-normal text-caption1 font-medium rounded-[5px] hover:bg-lighter transition-colors flex items-center gap-[6px] disabled:opacity-50 disabled:cursor-not-allowed'
           title='새로고침'
         >
-          <svg
-            width='16'
-            height='16'
-            viewBox='0 0 16 16'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M8 2.66667V1.33333M8 1.33333L6 3.33333M8 1.33333L10 3.33333M3.33333 8C3.33333 10.5773 5.42267 12.6667 8 12.6667C9.84 12.6667 11.42 11.5867 12.1867 10M12.6667 8C12.6667 5.42267 10.5773 3.33333 8 3.33333C6.16 3.33333 4.58 4.41333 3.81333 6M13.3333 8H14.6667M1.33333 8H2.66667'
-              stroke='currentColor'
-              strokeWidth='1.5'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-          새로고침
         </button>
+        <RefreshCwIcon size={16} className='text-normal' />
+           새로고침
       </div>
 
       {/* 상태 탭 */}
