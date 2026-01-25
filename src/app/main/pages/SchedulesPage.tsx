@@ -180,6 +180,18 @@ export default function SchedulesPage() {
     }
   };
 
+  // 날짜의 요일 색상 반환
+  const getDateColor = (dateString: string) => {
+    const date = new Date(dateString);
+    const dayOfWeek = date.getDay(); // 0: 일요일, 6: 토요일
+    if (dayOfWeek === 0) {
+      return 'text-red'; // 일요일: 빨간색
+    } else if (dayOfWeek === 6) {
+      return 'text-blue'; // 토요일: 파란색
+    }
+    return 'text-normal'; // 평일: 기본 색상
+  };
+
   const handleEdit = (schedule: Schedule) => {
     setSelectedSchedule(schedule);
     setIsEditModalOpen(true);
@@ -356,7 +368,7 @@ export default function SchedulesPage() {
                  {index + 1}
                </td>
                {/* 날짜 */}
-               <td className='p-[16px] text-body4 text-normal font-medium'>
+               <td className={`p-[16px] text-body4 font-medium ${getDateColor(schedule.date)}`}>
                  {schedule.date}
                </td>
                {/* 웨딩홀 */}
