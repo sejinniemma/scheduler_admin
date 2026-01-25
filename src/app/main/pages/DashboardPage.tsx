@@ -156,16 +156,19 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {sortedSchedules.length === 0 ? (
+      {!isLoading && sortedSchedules.length === 0 ? (
         <div className='flex items-center justify-center h-[400px]'>
           <p className='text-body2 text-default'>
             오늘 등록된 스케줄이 없습니다.
           </p>
         </div>
-      ) : (
-        isRefreshing ? (
-          <div className='flex items-center justify-center h-[400px]'>
-            <LoadingSpinner type='beat' size='lg' />
+      ) : isRefreshing ? (
+        <div className='flex items-center justify-center h-[400px]'>
+          <LoadingSpinner type='beat' size='lg' />
+        </div>
+      ) : isLoading ? (
+        <div className='flex items-center justify-center h-[400px]'>
+          <LoadingSpinner type='beat' size='lg' />
         </div>
       ) : (
         <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>
@@ -175,11 +178,11 @@ export default function DashboardPage() {
                 <tr className='text-caption1 font-bold text-[#454545] text-center'>
                   <th className='p-[16px]'>번호</th>
                   <th className='p-[16px]'>웨딩홀</th>
-                    <th className='p-[16px]'>예식시간</th>
-                    <th className='p-[16px]'>작가도착예정시간</th>
+                  <th className='p-[16px]'>예식시간</th>
+                  <th className='p-[16px]'>작가도착예정시간</th>
                   <th className='p-[16px]'>메인</th>
                   <th className='p-[16px]'>서브</th>
-                    <th className='p-[16px]'>상태</th>
+                  <th className='p-[16px]'>상태</th>
                 </tr>
               </thead>
               <tbody className='text-center'>
@@ -219,9 +222,9 @@ export default function DashboardPage() {
                       className='p-[16px]'
                       onClick={(e) => {
                         e.stopPropagation();
-                            setSelectedSchedule(schedule);
+                        setSelectedSchedule(schedule);
                         setIsStatusModalOpen(true);
-                          }}
+                      }}
                     >
                       {schedule.mainUserReportStatus ? (
                         <div className='flex flex-col gap-[4px] items-center'>
@@ -244,7 +247,6 @@ export default function DashboardPage() {
             </table>
           </div>
         </div>
-        )
       )}
 
       {/* Report 상태 수정 모달 */}

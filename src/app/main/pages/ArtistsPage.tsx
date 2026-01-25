@@ -173,36 +173,39 @@ export default function ArtistsPage() {
         ))}
       </div>
 
-      {filteredUsers.length === 0 ? (
+      {!isLoading && filteredUsers.length === 0 ? (
         <div className='flex items-center justify-center h-[400px]'>
           <p className='text-body2 text-default'>등록된 작가가 없습니다.</p>
         </div>
+      ) : isRefreshing ? (
+        <div className='flex items-center justify-center h-[400px]'>
+          <LoadingSpinner type='beat' size='lg' />
+        </div>
+      ) : isLoading ? (
+        <div className='flex items-center justify-center h-[400px]'>
+          <LoadingSpinner type='beat' size='lg' />
+        </div>
       ) : (
-        isRefreshing ? (
-          <div className='flex items-center justify-center h-[400px]'>
-            <LoadingSpinner type='beat' size='lg' />
-          </div>
-        ) : (
-          <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead className='bg-light border-b border-line-base'>
-                  <tr className='text-caption1 font-bold text-[#454545] text-center'>
-                    <th className='p-[16px]'>번호</th>
-                    <th className='p-[16px]'>이름</th>
-                    <th className='p-[16px]'>전화번호</th>
-                    <th className='p-[16px]'>성별</th>
-                    <th className='p-[16px]'>주소</th>
-                    <th className='p-[16px]'>주 활동지역</th>
-                    <th className='p-[16px]'>차량보유</th>
-                    <th className='p-[16px]'>시작일</th>
-                    <th className='p-[16px]'>상태</th>
-                    <th className='p-[16px]'>메모</th>
-                    <th className='p-[16px]'>상세</th>
-                  </tr>
-                </thead>
-                <tbody className='text-center'>
-                  {filteredUsers.map((user, index) => (
+        <div className='bg-white rounded-[10px] border border-line-base overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-light border-b border-line-base'>
+                <tr className='text-caption1 font-bold text-[#454545] text-center'>
+                  <th className='p-[16px]'>번호</th>
+                  <th className='p-[16px]'>이름</th>
+                  <th className='p-[16px]'>전화번호</th>
+                  <th className='p-[16px]'>성별</th>
+                  <th className='p-[16px]'>주소</th>
+                  <th className='p-[16px]'>주 활동지역</th>
+                  <th className='p-[16px]'>차량보유</th>
+                  <th className='p-[16px]'>시작일</th>
+                  <th className='p-[16px]'>상태</th>
+                  <th className='p-[16px]'>메모</th>
+                  <th className='p-[16px]'>상세</th>
+                </tr>
+              </thead>
+              <tbody className='text-center'>
+                {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
                     className='border-b border-line-edge hover:bg-lighter transition-colors'
@@ -260,12 +263,11 @@ export default function ArtistsPage() {
                       </button>
                     </td>
                   </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )
+        </div>
       )}
 
       {/* 작가 추가 모달 */}
