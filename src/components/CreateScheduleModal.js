@@ -62,7 +62,7 @@ export default function CreateScheduleModal({
   const calendarRef = useRef(null);
   const timeInputRef = useRef(null);
   const arrivalTimeInputRef = useRef(null);
-  
+
   // 작가 검색 상태
   const [mainUserSearch, setMainUserSearch] = useState('');
   const [subUserSearch, setSubUserSearch] = useState('');
@@ -93,7 +93,7 @@ export default function CreateScheduleModal({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showCalendar]);
-  
+
   // 작가 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -190,15 +190,15 @@ export default function CreateScheduleModal({
   // ACTIVE 상태인 사용자만 필터링
   const activeUsers =
     usersData?.users?.filter((user) => user.status === 'ACTIVE') || [];
-  
+
   // 작가 검색 필터링
   const filteredMainUsers = activeUsers.filter((user) =>
-    user.name.toLowerCase().includes(mainUserSearch.toLowerCase())
+    user.name.toLowerCase().includes(mainUserSearch.toLowerCase()),
   );
   const filteredSubUsers = activeUsers.filter((user) =>
-    user.name.toLowerCase().includes(subUserSearch.toLowerCase())
+    user.name.toLowerCase().includes(subUserSearch.toLowerCase()),
   );
-  
+
   // 선택된 작가 이름 가져오기
   const getSelectedUserName = (userId) => {
     if (!userId) return '';
@@ -233,7 +233,7 @@ export default function CreateScheduleModal({
   const handleChange = (field, value) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
-      
+
       // 예식 시간이 변경되면 작가 도착 시간을 자동으로 한 시간 전으로 설정
       if (field === 'time' && value) {
         // 시간 형식이 맞으면 포맷팅하고 도착 시간 설정
@@ -241,18 +241,18 @@ export default function CreateScheduleModal({
           newData.userArrivalTime = subtractOneHour(value);
         }
       }
-      
+
       return newData;
     });
   };
-  
+
   // 예식 시간 입력 핸들러 (10분 단위 검증)
   const handleTimeChange = (e) => {
     const value = e.target.value;
     // 입력 중에는 그대로 표시, 포커스 아웃 시 포맷팅
     handleChange('time', value);
   };
-  
+
   const handleTimeBlur = (e) => {
     const value = e.target.value;
     if (value) {
@@ -353,8 +353,8 @@ export default function CreateScheduleModal({
         err instanceof Error
           ? err.message
           : isEditMode
-          ? '일정 수정 중 오류가 발생했습니다.'
-          : '일정 생성 중 오류가 발생했습니다.'
+            ? '일정 수정 중 오류가 발생했습니다.'
+            : '일정 생성 중 오류가 발생했습니다.',
       );
     }
   };
@@ -406,23 +406,23 @@ export default function CreateScheduleModal({
       const changedUsers = [];
       if (mainUserChanged) {
         const existingMainUser = usersData?.users?.find(
-          (user) => user?.id === existingMainUserId
+          (user) => user?.id === existingMainUserId,
         );
         changedUsers.push(
-          `메인 작가: ${existingMainUser?.name || '알 수 없음'}`
+          `메인 작가: ${existingMainUser?.name || '알 수 없음'}`,
         );
       }
       if (subUserChanged) {
         const existingSubUser = usersData?.users?.find(
-          (user) => user?.id === existingSubUserId
+          (user) => user?.id === existingSubUserId,
         );
         changedUsers.push(
-          `서브 작가: ${existingSubUser?.name || '알 수 없음'}`
+          `서브 작가: ${existingSubUser?.name || '알 수 없음'}`,
         );
       }
 
       const confirmMessage = `이미 ${changedUsers.join(
-        ', '
+        ', ',
       )}가 배정되어있습니다.\n그래도 변경하시겠습니까?`;
 
       if (!window.confirm(confirmMessage)) {
@@ -438,7 +438,7 @@ export default function CreateScheduleModal({
       // 변경된 작가의 기존 Report 삭제
       if (mainUserChanged && existingMainUserId) {
         const mainReport = existingReports.find(
-          (r) => r.user === existingMainUserId && r.role === 'MAIN'
+          (r) => r.user === existingMainUserId && r.role === 'MAIN',
         );
         if (mainReport) {
           await deleteReport({
@@ -449,7 +449,7 @@ export default function CreateScheduleModal({
 
       if (subUserChanged && existingSubUserId) {
         const subReport = existingReports.find(
-          (r) => r.user === existingSubUserId && r.role === 'SUB'
+          (r) => r.user === existingSubUserId && r.role === 'SUB',
         );
         if (subReport) {
           await deleteReport({
@@ -519,7 +519,7 @@ export default function CreateScheduleModal({
     } catch (err) {
       console.error('확정완료 오류:', err);
       alert(
-        err instanceof Error ? err.message : '확정완료 중 오류가 발생했습니다.'
+        err instanceof Error ? err.message : '확정완료 중 오류가 발생했습니다.',
       );
     }
   };
@@ -531,7 +531,7 @@ export default function CreateScheduleModal({
     }
 
     const confirmed = window.confirm(
-      `정말로 이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`
+      `정말로 이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
     );
 
     if (!confirmed) return;
@@ -565,7 +565,9 @@ export default function CreateScheduleModal({
     } catch (err) {
       console.error('일정 삭제 오류:', err);
       alert(
-        err instanceof Error ? err.message : '일정 삭제 중 오류가 발생했습니다.'
+        err instanceof Error
+          ? err.message
+          : '일정 삭제 중 오류가 발생했습니다.',
       );
     }
   };
@@ -720,7 +722,10 @@ export default function CreateScheduleModal({
                 }
                 onClick={() => {
                   if (arrivalTimeInputRef.current) {
-                    if (typeof arrivalTimeInputRef.current.showPicker === 'function') {
+                    if (
+                      typeof arrivalTimeInputRef.current.showPicker ===
+                      'function'
+                    ) {
                       arrivalTimeInputRef.current.showPicker();
                     }
                   }
@@ -757,7 +762,9 @@ export default function CreateScheduleModal({
                   <input
                     type='text'
                     className='input'
-                    value={mainUserSearch || getSelectedUserName(formData.mainUser)}
+                    value={
+                      mainUserSearch || getSelectedUserName(formData.mainUser)
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
                       setMainUserSearch(value);
@@ -819,7 +826,9 @@ export default function CreateScheduleModal({
                   <input
                     type='text'
                     className='input'
-                    value={subUserSearch || getSelectedUserName(formData.subUser)}
+                    value={
+                      subUserSearch || getSelectedUserName(formData.subUser)
+                    }
                     onChange={(e) => {
                       const value = e.target.value;
                       setSubUserSearch(value);
@@ -917,7 +926,7 @@ export default function CreateScheduleModal({
                     '삭제'
                   )}
                 </button>
-            {schedule.status !== "confirmed" &&  
+                {/* {schedule.status !== "confirmed" &&  
             <button
                   type='button'
                   onClick={handleConfirm}
@@ -932,7 +941,7 @@ export default function CreateScheduleModal({
                   ) : (
                     '확정완료'
                   )}
-                </button>}
+                </button>} */}
               </>
             )}
             <button

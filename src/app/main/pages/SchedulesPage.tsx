@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSchedule } from '@/src/contexts/ScheduleContext';
 import CreateScheduleModal from '@/src/components/CreateScheduleModal';
-import BulkConfirmModal from '@/src/components/BulkConfirmModal';
 import LoadingSpinner from '@/src/components/LoadingSpinner';
 import DatePicker from '@/src/components/DatePicker';
 import type { Schedule } from '@/src/types/schedule';
@@ -20,7 +19,7 @@ export default function SchedulesPage() {
     null
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isBulkConfirmModalOpen, setIsBulkConfirmModalOpen] = useState(false);
+
 
   // 현재 선택된 년/월 상태
   const [currentDate, setCurrentDate] = useState(() => {
@@ -339,12 +338,6 @@ export default function SchedulesPage() {
           ))}
         </div>
    <div className='flex gap-[10px]'>
-     <button
-          onClick={() => setIsBulkConfirmModalOpen(true)}
-          className='px-[12px] py-[6px] cursor-pointer bg-green text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
-        >
-          일괄 확정
-        </button>
            <button
           onClick={() => setIsCreateModalOpen(true)}
           className='px-[12px] py-[6px] cursor-pointer bg-blue text-white text-caption1 font-medium rounded-[5px] hover:opacity-90 transition-opacity'
@@ -475,21 +468,7 @@ export default function SchedulesPage() {
         onSuccess={handleEditSuccess}
       />
 
-      {/* 일괄 확정 모달 */}
-      <BulkConfirmModal
-        open={isBulkConfirmModalOpen}
-        onClose={() => setIsBulkConfirmModalOpen(false)}
-        onSuccess={async () => {
-          setIsBulkConfirmModalOpen(false);
-          setIsRefreshing(true);
-          try {
-            await refetch();
-          } finally {
-            setIsRefreshing(false);
-          }
-        }}
-        schedules={schedules}
-      />
+  
     </div>
   );
 }
