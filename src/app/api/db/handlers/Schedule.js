@@ -434,31 +434,18 @@ export const resolvers = {
         status,
       });
 
-      // 배정된 경우 일정확정요청안내 알림톡 발송 (BizM, mainUser/subUser 대상)
+      // 배정된 경우 일정확정요청안내 알림톡 발송 (관리자 번호로 발송)
       const isAssigned = !!(mainUser || subUser);
       if (isAssigned) {
-        const scheduleInfo = {
-          date,
-          time,
-          groom,
-          bride,
-          venue: venue || '',
-        };
+        const scheduleLabel = `${date} ${time} ${groom}/${bride}`;
         const userIds = [mainUser, subUser].filter(Boolean);
         const users = await User.find({ id: { $in: userIds } })
-          .select('id name phone')
+          .select('id name')
           .lean();
-        for (const u of users) {
-          if (u?.phone) {
-            sendScheduleConfirmRequestAlimtalk(
-              u.phone,
-              u.name ?? undefined,
-              scheduleInfo,
-            ).catch((err) =>
-              console.error('[createSchedule] 알림톡 발송 실패', u.id, err),
-            );
-          }
-        }
+        const userName = users.map((u) => u.name).filter(Boolean).join(', ') || '-';
+        sendScheduleConfirmRequestAlimtalk(scheduleLabel, userName).catch((err) =>
+          console.error('[createSchedule] 알림톡 발송 실패', err),
+        );
       }
 
       return schedule;
