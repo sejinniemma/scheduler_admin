@@ -25,7 +25,6 @@ export async function sendKakaoAlimtalk(
   const apiUrl = process.env.KAKAO_ALIMTALK_API_URL;
   const apiKey = process.env.KAKAO_ALIMTALK_API_KEY;
   const senderKey = process.env.KAKAO_ALIMTALK_SENDER_KEY;
-  const senderNo = process.env.KAKAO_ALIMTALK_SENDER_NO;
 
   if (!apiUrl || !apiKey || !templateCode) {
     console.warn('[Kakao BizM] 설정 부족', {
@@ -58,7 +57,6 @@ export async function sendKakaoAlimtalk(
       cid: cidValue,
       template_code: templateCode,
       phone_number: phoneNumber,
-      sender_no: senderNo,
       message: message.slice(0, 1000),
       fall_back_yn,
     };
