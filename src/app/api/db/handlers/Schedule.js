@@ -5,6 +5,7 @@ import UserConfirm from '../models/UserConfirm';
 import { connectToDatabase } from '../mongodb';
 import { gql } from '@apollo/client';
 import { deleteAllSchedules as deleteAllSchedulesHelper } from './helper';
+import { sendScheduleConfirmRequestAlimtalk } from '@/src/lib/kakaoAlimtalk';
 
 // 파트별 유저 ID 목록 가져오기 (헬퍼 함수)
 async function getPartUserIds(adminPart) {
@@ -419,7 +420,7 @@ export const resolvers = {
       }
       await connectToDatabase();
 
-      return Schedule.create({
+      const schedule = await Schedule.create({
         mainUser,
         subUser: subUser || '',
         groom,
@@ -432,6 +433,31 @@ export const resolvers = {
         memo,
         status,
       });
+
+      // 배정된 경우 일정확정요청안내 알림톡 발송 (mainUser/subUser 대상)
+      const isAssigned = !!(mainUser || subUser);
+      if (isAssigned) {
+        const scheduleInfo = {
+          date,
+          time,
+          groom,
+          bride,
+          venue: venue || '',
+        };
+        const userIds = [mainUser, subUser].filter(Boolean);
+        const users = await User.find({ id: { $in: userIds } })
+          .select('id name phone')
+          .lean();
+        for (const u of users) {
+          if (u.phone) {
+            sendScheduleConfirmRequestAlimtalk(u.phone, u.name, scheduleInfo).catch(
+              (err) => console.error('[createSchedule] 알림톡 발송 실패', u.id, err),
+            );
+          }
+        }
+      }
+
+      return schedule;
     },
 
     updateSchedule: async (parent, { id, ...updates }, context) => {
