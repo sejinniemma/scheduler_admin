@@ -12,11 +12,12 @@ import type { Schedule } from '@/src/types/schedule';
 type ReportStatus =
   | 'pending'
   | 'wakeup'
+  | 'wakeup_delayed'
   | 'departure'
+  | 'departure_delayed'
   | 'arrival'
-  | 'completed'
-  | 'delayed'
-  | 'canceled';
+  | 'arrival_delayed'
+  | 'completed';
 
 interface ReportStatusModalProps {
   open: boolean;
@@ -28,11 +29,12 @@ interface ReportStatusModalProps {
 const statusOptions: { value: ReportStatus; label: string }[] = [
   { value: 'pending', label: '대기' },
   { value: 'wakeup', label: '기상' },
+  { value: 'wakeup_delayed', label: '기상 지연' },
   { value: 'departure', label: '출발' },
+  { value: 'departure_delayed', label: '출발 지연' },
   { value: 'arrival', label: '도착' },
+  { value: 'arrival_delayed', label: '도착 지연' },
   { value: 'completed', label: '완료' },
-  { value: 'delayed', label: '지연' },
-  { value: 'canceled', label: '취소' },
 ];
 
 export default function ReportStatusModal({

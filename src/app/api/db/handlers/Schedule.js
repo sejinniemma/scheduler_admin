@@ -4,6 +4,7 @@ import Report from '../models/Report';
 import UserConfirm from '../models/UserConfirm';
 import { connectToDatabase } from '../mongodb';
 import { gql } from '@apollo/client';
+import { deleteAllSchedules as deleteAllSchedulesHelper } from './helper';
 
 // 파트별 유저 ID 목록 가져오기 (헬퍼 함수)
 async function getPartUserIds(adminPart) {
@@ -93,6 +94,13 @@ export const typeDefs = gql`
     confirmSchedules(scheduleIds: [ID!]!): ConfirmSchedulesResult!
 
     deleteSchedule(id: ID!): Boolean!
+    deleteAllSchedules: DeleteAllSchedulesResult!
+  }
+
+  type DeleteAllSchedulesResult {
+    deletedSchedules: Int!
+    deletedReports: Int!
+    deletedUserConfirms: Int!
   }
 
   type ConfirmSchedulesResult {
@@ -120,7 +128,7 @@ export const resolvers = {
       // 파트별 쿼리 생성
       const { query } = await buildPartScheduleQuery(
         context.user.adminPart,
-        filters
+        filters,
       );
 
       const schedules = await Schedule.find(query).sort({ time: 1 });
@@ -172,7 +180,7 @@ export const resolvers = {
             mainUserReportStatus: mainUserReportStatus || null,
             subUserReportStatus: subUserReportStatus || null,
           };
-        })
+        }),
       );
 
       return schedulesWithUserNames;
@@ -278,7 +286,7 @@ export const resolvers = {
             mainUserConfirmed: mainUserConfirmed || false,
             subUserConfirmed: subUserConfirmed || false,
           };
-        })
+        }),
       );
 
       return schedulesWithUserNames;
@@ -359,7 +367,7 @@ export const resolvers = {
             mainUserReportStatus: mainUserReportStatus || null,
             subUserReportStatus: subUserReportStatus || null,
           };
-        })
+        }),
       );
 
       return schedulesWithUserNames;
@@ -404,7 +412,7 @@ export const resolvers = {
         memo,
         status = 'unassigned',
       },
-      context
+      context,
     ) => {
       if (!context.user?.adminPart) {
         throw new Error('어드민 권한이 필요합니다.');
@@ -461,12 +469,12 @@ export const resolvers = {
         (s) =>
           (partUserIds.includes(s.mainUser) ||
             partUserIds.includes(s.subUser)) &&
-          s.status === 'assigned'
+          s.status === 'assigned',
       );
 
       await Schedule.updateMany(
         { id: { $in: validSchedules.map((s) => s.id) } },
-        { $set: { status: 'confirmed' } }
+        { $set: { status: 'confirmed' } },
       );
 
       return {
@@ -496,6 +504,11 @@ export const resolvers = {
       }
 
       return false;
+    },
+
+    deleteAllSchedules: async (parent, args, context) => {
+      await connectToDatabase();
+      return deleteAllSchedulesHelper();
     },
   },
 };

@@ -58,6 +58,10 @@ export default function HistoryPage() {
     return { startDate: start, endDate: end };
   }, [currentDate]);
 
+  // 지연 관련 status (wakeup_delayed, departure_delayed, arrival_delayed)
+  const isDelayedStatus = (s: string | null | undefined) =>
+    s === 'wakeup_delayed' || s === 'departure_delayed' || s === 'arrival_delayed';
+
   // 월별 및 상태별 필터링 (Report status 기준)
   const filteredSchedules = schedules.filter((schedule) => {
     // 월별 필터링 (date 기준)
@@ -68,7 +72,12 @@ export default function HistoryPage() {
 
     // 상태별 필터링 (Report status 기준)
     if (statusFilter === 'all') return true;
-    // MAIN Report status 또는 SUB Report status가 필터와 일치하는지 확인
+    if (statusFilter === 'delayed') {
+      return (
+        isDelayedStatus(schedule.mainUserReportStatus) ||
+        isDelayedStatus(schedule.subUserReportStatus)
+      );
+    }
     return (
       schedule.mainUserReportStatus === statusFilter ||
       schedule.subUserReportStatus === statusFilter

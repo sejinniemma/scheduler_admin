@@ -40,21 +40,33 @@ export default function DashboardPage() {
     return formatDateForGroup(dateString);
   };
 
+  // 지연 관련 status 여부 (wakeup_delayed, departure_delayed, arrival_delayed)
+  const isDelayedStatus = (s: string | null | undefined) =>
+    s === 'wakeup_delayed' || s === 'departure_delayed' || s === 'arrival_delayed';
+
   // 상태별 필터링 (Report status 기준)
   const filteredSchedules = schedules.filter((schedule) => {
     if (statusFilter === 'all') return true;
-    
-    // 도착 탭일 때는 arrival과 delayed 둘 다 포함
+
+    // 도착 탭: arrival, arrival_delayed 포함
     if (statusFilter === 'arrival') {
       return (
         schedule.mainUserReportStatus === 'arrival' ||
         schedule.subUserReportStatus === 'arrival' ||
-        schedule.mainUserReportStatus === 'delayed' ||
-        schedule.subUserReportStatus === 'delayed'
+        schedule.mainUserReportStatus === 'arrival_delayed' ||
+        schedule.subUserReportStatus === 'arrival_delayed'
       );
     }
-    
-    // MAIN Report status 또는 SUB Report status가 필터와 일치하는지 확인
+
+    // 지연 탭: 기상/출발/도착 지연 모두 포함
+    if (statusFilter === 'delayed') {
+      return (
+        isDelayedStatus(schedule.mainUserReportStatus) ||
+        isDelayedStatus(schedule.subUserReportStatus)
+      );
+    }
+
+    // 그 외: MAIN 또는 SUB Report status가 필터와 일치
     return (
       schedule.mainUserReportStatus === statusFilter ||
       schedule.subUserReportStatus === statusFilter

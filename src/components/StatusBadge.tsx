@@ -2,17 +2,19 @@
 
 import React from 'react';
 
-type ScheduleStatus =
+type ReportStatus =
   | 'pending'
   | 'wakeup'
+  | 'wakeup_delayed'
   | 'departure'
+  | 'departure_delayed'
   | 'arrival'
+  | 'arrival_delayed'
   | 'completed'
-  | 'delayed'
-  | 'canceled';
+  | 'canceled'; // 기존 데이터 표시용
 
 interface StatusBadgeProps {
-  status: ScheduleStatus | string;
+  status: ReportStatus | string;
 }
 
 const getStatusLabel = (status: string): string => {
@@ -20,40 +22,48 @@ const getStatusLabel = (status: string): string => {
     case 'pending':
       return '대기';
     case 'wakeup':
-      return '기상완료';
+      return '기상';
+    case 'wakeup_delayed':
+      return '기상 지연';
     case 'departure':
-      return '출발완료';
+      return '출발';
+    case 'departure_delayed':
+      return '출발 지연';
     case 'arrival':
-      return '도착완료';
+      return '도착';
+    case 'arrival_delayed':
+      return '도착 지연';
     case 'completed':
       return '종료';
-    case 'delayed':
-      return '지연 도착';
     case 'canceled':
       return '취소';
     default:
-      return '대기';
+      return status || '대기';
   }
 };
 
 const getStatusColor = (status: string): string => {
   switch (status) {
     case 'arrival':
-      return '#10B981'; // 도착완료 - emerald-500 (밝은 녹색)
+      return '#10B981'; // 도착 - emerald-500
     case 'pending':
-      return '#6B7280'; // 대기 - gray-500 (중립 회색)
+      return '#6B7280'; // 대기 - gray-500
     case 'wakeup':
-      return '#A78BFA'; // 기상완료 - violet-400 (부드러운 보라색)
+      return '#A78BFA'; // 기상 - violet-400
+    case 'wakeup_delayed':
+      return '#F59E0B'; // 기상 지연 - amber-500
     case 'departure':
-      return '#3B82F6'; // 출발완료 - blue-500 (신뢰감 있는 파란색)
-    case 'delayed':
-      return '#F59E0B'; // 지연 도착 - amber-500 (주의 주황색)
+      return '#3B82F6'; // 출발 - blue-500
+    case 'departure_delayed':
+      return '#F59E0B'; // 출발 지연 - amber-500
+    case 'arrival_delayed':
+      return '#F59E0B'; // 도착 지연 - amber-500
     case 'completed':
-      return '#059669'; // 종료 - emerald-600 (진한 녹색)
+      return '#059669'; // 종료 - emerald-600
     case 'canceled':
-      return '#EF4444'; // 취소 - red-500 (명확한 빨간색)
+      return '#EF4444'; // 취소 - red-500
     default:
-      return '#6B7280'; // 기본값 - gray-500 (중립 회색)
+      return '#6B7280'; // 기본값 - gray-500
   }
 };
 
