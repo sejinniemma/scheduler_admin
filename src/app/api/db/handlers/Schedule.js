@@ -434,7 +434,7 @@ export const resolvers = {
         status,
       });
 
-      // 배정된 경우 일정확정요청안내 알림톡 발송 (mainUser/subUser 대상)
+      // 배정된 경우 일정확정요청안내 알림톡 발송 (BizM, mainUser/subUser 대상)
       const isAssigned = !!(mainUser || subUser);
       if (isAssigned) {
         const scheduleInfo = {
@@ -449,9 +449,13 @@ export const resolvers = {
           .select('id name phone')
           .lean();
         for (const u of users) {
-          if (u.phone) {
-            sendScheduleConfirmRequestAlimtalk(u.phone, u.name, scheduleInfo).catch(
-              (err) => console.error('[createSchedule] 알림톡 발송 실패', u.id, err),
+          if (u?.phone) {
+            sendScheduleConfirmRequestAlimtalk(
+              u.phone,
+              u.name ?? undefined,
+              scheduleInfo,
+            ).catch((err) =>
+              console.error('[createSchedule] 알림톡 발송 실패', u.id, err),
             );
           }
         }
